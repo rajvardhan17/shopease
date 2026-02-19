@@ -2,7 +2,7 @@ import axios from "axios";
 
 // ===== Base Axios setup =====
 const api = axios.create({
-  baseURL: "http://localhost:8081/shop-ease-api", // Update to your backend URL
+  baseURL: "https://shopease-production.up.railway.app/api/login", // Update to your backend URL
   headers: {
     "Content-Type": "application/json",
   },
