@@ -7,15 +7,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DatabaseUtil {
-    private static final Logger LOGGER = Logger.getLogger(DatabaseUtil.class.getName());
 
-    private static final String URL = "jdbc:mysql://localhost:3306/shopease";
-    private static final String USER = "root"; // change if needed
-    private static final String PASSWORD = "admin@2204"; // change if needed
+    private static final Logger LOGGER = Logger.getLogger(DatabaseUtil.class.getName());
 
     static {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver"); // MySQL 8+ driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             LOGGER.log(Level.SEVERE, "MySQL Driver not found", e);
         }
@@ -23,20 +20,24 @@ public class DatabaseUtil {
 
     public static Connection getConnection() {
         try {
-            return DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Failed to create database connection", e);
-            return null;
-        }
-    }
+            String databaseUrl = System.getenv("DATABASE_URL");
 
-    public static void closeConnection(Connection conn) {
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                LOGGER.log(Level.WARNING, "Error closing connection", e);
+            if (databaseUrl == null) {
+                throw new RuntimeException("DATABASE_URL not found in Railway environment variables");
             }
+
+            // Convert mysql:// to jdbc:mysql://
+            String jdbcUrl = databaseUrl.replace("mysql://", "jdbc:mysql://")
+                    + "?useSSL=false&allowPublicKeyRetrieval=true";
+
+            Connection conn = DriverManager.getConnection(jdbcUrl);
+
+            LOGGER.info("Connected to Railway MySQL successfully!");
+            return conn;
+
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Database connection failed", e);
+            return null;
         }
     }
 }
