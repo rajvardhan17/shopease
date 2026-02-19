@@ -3,11 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.shopease</groupId>
     <artifactId>shop-ease-api</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -33,27 +35,26 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- JSON (optional, for APIs) -->
+        <!-- JSON processing -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.15.4</version>
         </dependency>
 
-        <!--Hash-->
+        <!-- Password hashing -->
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
 
-
     </dependencies>
 
-
     <build>
-        <finalName>shop-ease-api</finalName>
+        <finalName>ROOT</finalName> <!-- This ensures Docker/Tomcat sees ROOT.war -->
         <plugins>
+
             <!-- Compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -72,8 +73,10 @@
                 <version>3.3.2</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <warName>ROOT</warName> <!-- Explicitly name WAR as ROOT -->
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 
