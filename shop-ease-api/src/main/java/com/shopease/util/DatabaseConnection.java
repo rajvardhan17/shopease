@@ -1,8 +1,12 @@
 package com.shopease.util;
 
 import java.io.InputStream;
-import java.sql.*;
-import java.util.logging.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class DatabaseConnection {
 
@@ -31,6 +35,7 @@ public class DatabaseConnection {
     }
 
     public static Connection getConnection() {
+
         try {
             String host = System.getenv("MYSQLHOST");
             String port = System.getenv("MYSQLPORT");
@@ -38,12 +43,18 @@ public class DatabaseConnection {
             String user = System.getenv("MYSQLUSER");
             String password = System.getenv("MYSQLPASSWORD");
 
-            if (host == null || port == null || database == null) {
+            if (host == null || port == null || database == null || user == null || password == null) {
                 throw new RuntimeException("Railway MySQL environment variables not found!");
             }
 
+            LOGGER.info("Connecting to Railway MySQL...");
+            LOGGER.info("Host: " + host);
+            LOGGER.info("Port: " + port);
+            LOGGER.info("Database: " + database);
+
+            // Use SSL mode REQUIRED for Railway
             String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
-                    + "?useSSL=false&allowPublicKeyRetrieval=true";
+                    + "?sslMode=REQUIRED";
 
             Connection connection = DriverManager.getConnection(jdbcUrl, user, password);
 
@@ -51,12 +62,12 @@ public class DatabaseConnection {
             return connection;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database connection error", e);
-            return null;
+            LOGGER.log(Level.SEVERE, "Database connection failed", e);
+            throw new RuntimeException("Database connection failed", e);
         }
     }
 
-    public static void close(Connection conn, Statement stmt, ResultSet rs) {
+    public static void close(Connection conn, java.sql.Statement stmt, java.sql.ResultSet rs) {
         try {
             if (rs != null) rs.close();
             if (stmt != null) stmt.close();
