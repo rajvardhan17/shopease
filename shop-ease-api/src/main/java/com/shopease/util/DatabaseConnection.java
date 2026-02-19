@@ -8,10 +8,15 @@ public class DatabaseConnection {
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/";
-    private static final String DB_NAME = "shopease";
-    private static final String DB_USER = "root";       // change as per your MySQL username
-    private static final String DB_PASSWORD = "admin@2204";   // change as per your MySQL password
+    // Use environment variables for cloud DB
+    private static final String DB_HOST = System.getenv("DB_HOST");
+    private static final String DB_PORT = System.getenv("DB_PORT");
+    private static final String DB_NAME = System.getenv("DB_NAME");
+    private static final String DB_USER = System.getenv("DB_USER");
+    private static final String DB_PASSWORD = System.getenv("DB_PASSWORD");
+
+    // JDBC URL
+    private static final String JDBC_URL = "jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME + "?useSSL=false&allowPublicKeyRetrieval=true";
 
     static {
         setupLogging();
@@ -38,20 +43,12 @@ public class DatabaseConnection {
         }
     }
 
-    /** Get connection (auto-create DB if needed) */
+    /** Get connection to cloud DB */
     public static Connection getConnection() {
         Connection connection = null;
         try {
-            // Step 1: Connect without DB
-            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-            Statement stmt = connection.createStatement();
-            stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS " + DB_NAME);
-            stmt.close();
-            connection.close();
-
-            // Step 2: Connect to the actual database
-            connection = DriverManager.getConnection(DB_URL + DB_NAME + "?useSSL=false&allowPublicKeyRetrieval=true", DB_USER, DB_PASSWORD);
-            LOGGER.info("Connected to database: " + DB_NAME);
+            connection = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWORD);
+            LOGGER.info("Connected to cloud database: " + DB_NAME);
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Database connection error: " + e.getMessage(), e);
         }
