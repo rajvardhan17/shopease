@@ -2,8 +2,6 @@
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
-
-# Copy everything and build
 COPY . .
 RUN mvn clean package -DskipTests
 
@@ -18,8 +16,12 @@ RUN rm -rf webapps/*
 # Copy Spring Boot WAR as ROOT
 COPY --from=build /app/target/*.war webapps/ROOT.war
 
-# Expose default port
-EXPOSE 8080
+# Copy custom server.xml to use Railway PORT
+COPY tomcat-conf/server.xml conf/server.xml
+
+# Expose the PORT dynamically
+ENV PORT=8080
+EXPOSE $PORT
 
 # JVM memory options (optional)
 ENV JAVA_OPTS="-Xms512m -Xmx1024m"
@@ -27,5 +29,5 @@ ENV JAVA_OPTS="-Xms512m -Xmx1024m"
 # Healthcheck for Railway
 HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost:$PORT/ || exit 1
 
-# Run Tomcat in foreground (important for Railway)
+# Run Tomcat in foreground
 CMD ["catalina.sh", "run"]
