@@ -1,8 +1,11 @@
-# Stage 1: Build with Maven
+# Stage 1: Build the WAR using Maven
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
-COPY . .
+
+# Copy all project files and build WAR
+COPY pom.xml .
+COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Run with Tomcat
@@ -13,21 +16,12 @@ WORKDIR /usr/local/tomcat
 # Remove default apps
 RUN rm -rf webapps/*
 
-# Copy Spring Boot WAR as ROOT
-COPY --from=build /app/target/*.war webapps/ROOT.war
+# Copy the WAR from build stage as ROOT.war
+COPY --from=build /app/target/ROOT.war webapps/ROOT.war
 
-# Copy custom server.xml to use Railway PORT
-COPY tomcat-conf/server.xml conf/server.xml
+# Expose the Railway dynamic port
+ENV CATALINA_OPTS="-Dport.http=$PORT -Xms512m -Xmx1024m"
+EXPOSE 8080
 
-# Expose the PORT dynamically
-ENV PORT=8080
-EXPOSE $PORT
-
-# JVM memory options (optional)
-ENV JAVA_OPTS="-Xms512m -Xmx1024m"
-
-# Healthcheck for Railway
-HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost:$PORT/ || exit 1
-
-# Run Tomcat in foreground
+# Start Tomcat in foreground
 CMD ["catalina.sh", "run"]

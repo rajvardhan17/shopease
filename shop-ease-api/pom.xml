@@ -19,7 +19,6 @@
     </properties>
 
     <dependencies>
-
         <!-- MySQL JDBC Driver -->
         <dependency>
             <groupId>com.mysql</groupId>
@@ -48,13 +47,13 @@
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
-
     </dependencies>
 
     <build>
-        <finalName>ROOT</finalName> <!-- This ensures Docker/Tomcat sees ROOT.war -->
-        <plugins>
+        <!-- Make sure WAR is named ROOT.war for Tomcat -->
+        <finalName>ROOT</finalName>
 
+        <plugins>
             <!-- Compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -73,10 +72,9 @@
                 <version>3.3.2</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
-                    <warName>ROOT</warName> <!-- Explicitly name WAR as ROOT -->
+                    <warName>ROOT</warName>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 
