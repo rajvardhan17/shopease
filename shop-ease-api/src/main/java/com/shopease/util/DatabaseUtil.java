@@ -20,17 +20,21 @@ public class DatabaseUtil {
 
     public static Connection getConnection() {
         try {
-            String databaseUrl = System.getenv("DATABASE_URL");
 
-            if (databaseUrl == null) {
-                throw new RuntimeException("DATABASE_URL not found in Railway environment variables");
+            String host = System.getenv("MYSQLHOST");
+            String port = System.getenv("MYSQLPORT");
+            String database = System.getenv("MYSQLDATABASE");
+            String user = System.getenv("MYSQLUSER");
+            String password = System.getenv("MYSQLPASSWORD");
+
+            if (host == null) {
+                throw new RuntimeException("Railway MySQL environment variables not found.");
             }
 
-            // Convert mysql:// to jdbc:mysql://
-            String jdbcUrl = databaseUrl.replace("mysql://", "jdbc:mysql://")
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
                     + "?useSSL=false&allowPublicKeyRetrieval=true";
 
-            Connection conn = DriverManager.getConnection(jdbcUrl);
+            Connection conn = DriverManager.getConnection(jdbcUrl, user, password);
 
             LOGGER.info("Connected to Railway MySQL successfully!");
             return conn;

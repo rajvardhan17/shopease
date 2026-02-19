@@ -8,23 +8,13 @@ public class DatabaseConnection {
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
 
-    // Use environment variables for cloud DB
-    private static final String DB_HOST = System.getenv("DB_HOST");
-    private static final String DB_PORT = System.getenv("DB_PORT");
-    private static final String DB_NAME = System.getenv("DB_NAME");
-    private static final String DB_USER = System.getenv("DB_USER");
-    private static final String DB_PASSWORD = System.getenv("DB_PASSWORD");
-
-    // JDBC URL
-    private static final String JDBC_URL = "jdbc:mysql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME + "?useSSL=false&allowPublicKeyRetrieval=true";
-
     static {
         setupLogging();
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             LOGGER.info("MySQL JDBC Driver loaded successfully.");
         } catch (ClassNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "MySQL JDBC Driver not found. Please add it to your classpath.", e);
+            LOGGER.log(Level.SEVERE, "MySQL JDBC Driver not found.", e);
         }
     }
 
@@ -34,28 +24,38 @@ public class DatabaseConnection {
 
             if (configFile != null) {
                 LogManager.getLogManager().readConfiguration(configFile);
-                LOGGER.info("Custom logging configuration loaded.");
-            } else {
-                LOGGER.warning("logging.properties not found. Using default logging configuration.");
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error loading logging configuration.", e);
         }
     }
 
-    /** Get connection to cloud DB */
     public static Connection getConnection() {
-        Connection connection = null;
         try {
-            connection = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWORD);
-            LOGGER.info("Connected to cloud database: " + DB_NAME);
+            String host = System.getenv("MYSQLHOST");
+            String port = System.getenv("MYSQLPORT");
+            String database = System.getenv("MYSQLDATABASE");
+            String user = System.getenv("MYSQLUSER");
+            String password = System.getenv("MYSQLPASSWORD");
+
+            if (host == null || port == null || database == null) {
+                throw new RuntimeException("Railway MySQL environment variables not found!");
+            }
+
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
+                    + "?useSSL=false&allowPublicKeyRetrieval=true";
+
+            Connection connection = DriverManager.getConnection(jdbcUrl, user, password);
+
+            LOGGER.info("Connected to Railway MySQL successfully!");
+            return connection;
+
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database connection error: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Database connection error", e);
+            return null;
         }
-        return connection;
     }
 
-    /** Close DB resources safely */
     public static void close(Connection conn, Statement stmt, ResultSet rs) {
         try {
             if (rs != null) rs.close();
