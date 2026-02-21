@@ -35,35 +35,28 @@ public class DatabaseConnection {
     }
 
     public static Connection getConnection() {
+
     try {
+        String host = System.getenv("MYSQLHOST");
+        String port = System.getenv("MYSQLPORT");
+        String database = System.getenv("MYSQLDATABASE");
+        String user = System.getenv("MYSQLUSER");
+        String password = System.getenv("MYSQLPASSWORD");
 
-        String databaseUrl = System.getenv("DATABASE_URL");
-
-        if (databaseUrl != null) {
-            LOGGER.info("Using DATABASE_URL from Railway");
-
-            // DATABASE_URL format:
-            // mysql://user:password@host:port/database
-
-            String cleanUrl = databaseUrl.replace("mysql://", "");
-            String[] parts = cleanUrl.split("@");
-
-            String userPass = parts[0];
-            String hostDb = parts[1];
-
-            String user = userPass.split(":")[0];
-            String password = userPass.split(":")[1];
-
-            String hostPort = hostDb.split("/")[0];
-            String database = hostDb.split("/")[1];
-
-            String host = hostPort.split(":")[0];
-            String port = hostPort.split(":")[1];
-
-            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database + "?sslMode=REQUIRED";
-
-            return DriverManager.getConnection(jdbcUrl, user, password);
+        if (host == null || port == null || database == null || user == null || password == null) {
+            throw new RuntimeException("Railway MySQL environment variables missing!");
         }
+
+        String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
+                + "?useSSL=true&requireSSL=true&serverTimezone=UTC";
+
+        return DriverManager.getConnection(jdbcUrl, user, password);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return null;  // IMPORTANT
+    }
+}
 
         // Fallback to old Railway variables
         String host = System.getenv("MYSQLHOST");
