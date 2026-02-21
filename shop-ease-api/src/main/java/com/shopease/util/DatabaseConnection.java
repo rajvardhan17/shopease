@@ -35,7 +35,6 @@ public class DatabaseConnection {
     }
 
     public static Connection getConnection() {
-
     try {
         String host = System.getenv("MYSQLHOST");
         String port = System.getenv("MYSQLPORT");
@@ -43,39 +42,28 @@ public class DatabaseConnection {
         String user = System.getenv("MYSQLUSER");
         String password = System.getenv("MYSQLPASSWORD");
 
-        if (host == null || port == null || database == null || user == null || password == null) {
-            throw new RuntimeException("Railway MySQL environment variables missing!");
+        if (host == null || database == null || user == null || password == null) {
+            throw new RuntimeException("Railway MySQL environment variables not found.");
         }
 
-        String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
-                + "?useSSL=true&requireSSL=true&serverTimezone=UTC";
+        String jdbcUrl;
 
-        return DriverManager.getConnection(jdbcUrl, user, password);
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return null;  // IMPORTANT
-    }
-}
-
-        // Fallback to old Railway variables
-        String host = System.getenv("MYSQLHOST");
-        String port = System.getenv("MYSQLPORT");
-        String database = System.getenv("MYSQLDATABASE");
-        String user = System.getenv("MYSQLUSER");
-        String password = System.getenv("MYSQLPASSWORD");
-
-        if (host == null) {
-            throw new RuntimeException("No Railway DB variables found.");
+        // If Railway host already includes port (very common)
+        if (host.contains(":")) {
+            jdbcUrl = "jdbc:mysql://" + host + "/" + database +
+                    "?useSSL=true&requireSSL=true&serverTimezone=UTC";
+        } else {
+            jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database +
+                    "?useSSL=true&requireSSL=true&serverTimezone=UTC";
         }
 
-        String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database + "?sslMode=REQUIRED";
+        LOGGER.info("Final JDBC URL: " + jdbcUrl);
 
         return DriverManager.getConnection(jdbcUrl, user, password);
 
     } catch (Exception e) {
         LOGGER.log(Level.SEVERE, "Database connection failed", e);
-        throw new RuntimeException("Database connection failed", e);
+        return null;
     }
 }
     public static void close(Connection conn, java.sql.Statement stmt, java.sql.ResultSet rs) {
