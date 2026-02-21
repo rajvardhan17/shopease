@@ -35,38 +35,56 @@ public class DatabaseConnection {
     }
 
     public static Connection getConnection() {
+    try {
 
-        try {
-            String host = System.getenv("MYSQLHOST");
-            String port = System.getenv("MYSQLPORT");
-            String database = System.getenv("MYSQLDATABASE");
-            String user = System.getenv("MYSQLUSER");
-            String password = System.getenv("MYSQLPASSWORD");
+        String databaseUrl = System.getenv("DATABASE_URL");
 
-            if (host == null || port == null || database == null || user == null || password == null) {
-                throw new RuntimeException("Railway MySQL environment variables not found!");
-            }
+        if (databaseUrl != null) {
+            LOGGER.info("Using DATABASE_URL from Railway");
 
-            LOGGER.info("Connecting to Railway MySQL...");
-            LOGGER.info("Host: " + host);
-            LOGGER.info("Port: " + port);
-            LOGGER.info("Database: " + database);
+            // DATABASE_URL format:
+            // mysql://user:password@host:port/database
 
-            // Use SSL mode REQUIRED for Railway
-            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
-                    + "?sslMode=REQUIRED";
+            String cleanUrl = databaseUrl.replace("mysql://", "");
+            String[] parts = cleanUrl.split("@");
 
-            Connection connection = DriverManager.getConnection(jdbcUrl, user, password);
+            String userPass = parts[0];
+            String hostDb = parts[1];
 
-            LOGGER.info("Connected to Railway MySQL successfully!");
-            return connection;
+            String user = userPass.split(":")[0];
+            String password = userPass.split(":")[1];
 
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database connection failed", e);
-            throw new RuntimeException("Database connection failed", e);
+            String hostPort = hostDb.split("/")[0];
+            String database = hostDb.split("/")[1];
+
+            String host = hostPort.split(":")[0];
+            String port = hostPort.split(":")[1];
+
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database + "?sslMode=REQUIRED";
+
+            return DriverManager.getConnection(jdbcUrl, user, password);
         }
-    }
 
+        // Fallback to old Railway variables
+        String host = System.getenv("MYSQLHOST");
+        String port = System.getenv("MYSQLPORT");
+        String database = System.getenv("MYSQLDATABASE");
+        String user = System.getenv("MYSQLUSER");
+        String password = System.getenv("MYSQLPASSWORD");
+
+        if (host == null) {
+            throw new RuntimeException("No Railway DB variables found.");
+        }
+
+        String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database + "?sslMode=REQUIRED";
+
+        return DriverManager.getConnection(jdbcUrl, user, password);
+
+    } catch (Exception e) {
+        LOGGER.log(Level.SEVERE, "Database connection failed", e);
+        throw new RuntimeException("Database connection failed", e);
+    }
+}
     public static void close(Connection conn, java.sql.Statement stmt, java.sql.ResultSet rs) {
         try {
             if (rs != null) rs.close();
