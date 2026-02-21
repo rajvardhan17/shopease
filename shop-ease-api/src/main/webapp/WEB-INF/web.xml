@@ -18,7 +18,7 @@
     <!-- ===================== Login Servlet ===================== -->
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>com.shop-ease.servlet.LoginServlet</servlet-class>
+        <servlet-class>com.shopease.servlet.LoginServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>LoginServlet</servlet-name>
@@ -28,7 +28,7 @@
     <!-- ===================== Logout Servlet ===================== -->
     <servlet>
         <servlet-name>LogoutServlet</servlet-name>
-        <servlet-class>com.shop-ease.servlet.LogoutServlet</servlet-class>
+        <servlet-class>com.shopease.servlet.LogoutServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>LogoutServlet</servlet-name>
@@ -38,7 +38,7 @@
     <!-- ===================== Session Servlet ===================== -->
     <servlet>
         <servlet-name>SessionServlet</servlet-name>
-        <servlet-class>com.shop-ease.servlet.SessionServlet</servlet-class>
+        <servlet-class>com.shopease.servlet.SessionServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>SessionServlet</servlet-name>
@@ -48,7 +48,7 @@
     <!-- ===================== Product Search Servlet ===================== -->
     <servlet>
         <servlet-name>SearchServlet</servlet-name>
-        <servlet-class>com.shop-ease.servlet.SearchServlet</servlet-class>
+        <servlet-class>com.shopease.servlet.SearchServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>SearchServlet</servlet-name>
