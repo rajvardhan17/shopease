@@ -21,7 +21,7 @@
 
     <!-- Connector: Use Railway's $PORT environment variable -->
     <Connector
-            port="${port.http}"
+            port="${port}"
             protocol="HTTP/1.1"
             connectionTimeout="20000"
             redirectPort="8443"
