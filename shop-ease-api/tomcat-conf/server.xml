@@ -21,13 +21,13 @@
 
     <!-- Connector: Use Railway's $PORT environment variable -->
     <Connector
-        port="${PORT}"
-        protocol="HTTP/1.1"
-        connectionTimeout="20000"
-        redirectPort="8443"
-        URIEncoding="UTF-8"
-        enableLookups="false"
-        useBodyEncodingForURI="true"
+            port="${port.http}"
+            protocol="HTTP/1.1"
+            connectionTimeout="20000"
+            redirectPort="8443"
+            URIEncoding="UTF-8"
+            enableLookups="false"
+            useBodyEncodingForURI="true"
     />
 
     <Engine name="Catalina" defaultHost="localhost">
