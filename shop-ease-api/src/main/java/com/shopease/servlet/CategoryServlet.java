@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@WebServlet("/api/categories/*")
+//@WebServlet("/api/categories/*")
 public class CategoryServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(CategoryServlet.class.getName());

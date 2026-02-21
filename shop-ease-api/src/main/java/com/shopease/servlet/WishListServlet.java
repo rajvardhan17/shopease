@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@WebServlet("/api/wishlist/*")
+//@WebServlet("/api/wishlist/*")
 public class WishListServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(WishListServlet.class.getName());

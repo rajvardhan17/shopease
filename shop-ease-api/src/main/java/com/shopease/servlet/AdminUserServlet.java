@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet("/api/admin/users/*")
+//@WebServlet("/api/admin/users/*")
 public class AdminUserServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
     private final ObjectMapper mapper = new ObjectMapper();

@@ -14,7 +14,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@WebServlet("/api/logout")
+//@WebServlet("/api/logout")
 public class LogoutServlet extends HttpServlet {
 
     private final ObjectMapper mapper = new ObjectMapper();

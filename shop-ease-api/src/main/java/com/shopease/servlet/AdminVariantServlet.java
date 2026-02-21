@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@WebServlet("/api/admin/variants/*")
+//@WebServlet("/api/admin/variants/*")
 public class AdminVariantServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(AdminVariantServlet.class.getName());

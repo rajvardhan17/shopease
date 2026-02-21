@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@WebServlet("/api/addresses/*")
+//@WebServlet("/api/addresses/*")
 public class AddressServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(AddressServlet.class.getName());

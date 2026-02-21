@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet("/api/admin/orders/*")
+//@WebServlet("/api/admin/orders/*")
 public class AdminOrderServlet extends HttpServlet {
     private final OrderDAO orderDAO = new OrderDAO();
     private final ObjectMapper mapper = new ObjectMapper();

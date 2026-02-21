@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@WebServlet("/api/variants/*")
+//@WebServlet("/api/variants/*")
 public class ProductVariantServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ProductVariantServlet.class.getName());

@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@WebServlet("/api/payment")
+//@WebServlet("/api/payment")
 public class PaymentServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(PaymentServlet.class.getName());

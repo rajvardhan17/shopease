@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@WebServlet("/api/cart/*")
+//@WebServlet("/api/cart/*")
 public class CartServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(CartServlet.class.getName());

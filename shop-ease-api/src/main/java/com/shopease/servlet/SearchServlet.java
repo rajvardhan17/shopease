@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-@WebServlet("/api/search")
+//@WebServlet("/api/search")
 public class SearchServlet extends HttpServlet {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
