@@ -19,4 +19,3 @@ COPY --from=build /app/target/ROOT.war webapps/ROOT.war
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "catalina.sh run -Dport.http=$PORT"]
