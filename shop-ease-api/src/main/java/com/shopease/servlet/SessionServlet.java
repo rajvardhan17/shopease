@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@WebServlet("/api/session")
+//@WebServlet("/api/session")
 public class SessionServlet extends HttpServlet {
 
     private final ObjectMapper mapper = new ObjectMapper();
