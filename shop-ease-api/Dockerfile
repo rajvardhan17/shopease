@@ -16,6 +16,7 @@ RUN rm -rf webapps/*
 
 COPY --from=build /app/target/ROOT.war webapps/ROOT.war
 
+ENV CATALINA_OPTS="-DPORT=${PORT}"
 
 EXPOSE 8080
 
