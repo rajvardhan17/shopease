@@ -14,20 +14,15 @@ RUN mvn clean package -DskipTests
 # Stage 2: Run with Tomcat
 FROM tomcat:9.0-jdk17
 
-# Set working directory
 WORKDIR /usr/local/tomcat
 
-# Remove default apps
 RUN rm -rf webapps/*
 
-# Copy the WAR from build stage as ROOT.war
 COPY --from=build /app/target/ROOT.war webapps/ROOT.war
 
-# Railway dynamic port
-ENV CATALINA_OPTS="-Dport.http=$PORT -Xms512m -Xmx1024m"
+# Replace default 8080 with Railway dynamic PORT
+RUN sed -i 's/port="8080"/port="${PORT}"/' conf/server.xml
 
-# Expose default Tomcat port (not strictly necessary for Railway)
 EXPOSE 8080
 
-# Start Tomcat in foreground
 CMD ["catalina.sh", "run"]
