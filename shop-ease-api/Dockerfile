@@ -9,7 +9,7 @@ RUN mvn clean package -DskipTests
 
 
 # Stage 2: Tomcat
-FROM tomcat:9.0-jdk17
+FROM tomcat:10.1-jdk17
 
 RUN rm -rf /usr/local/tomcat/webapps/*
 
