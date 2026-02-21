@@ -17,7 +17,7 @@ RUN rm -rf webapps/*
 COPY --from=build /app/target/ROOT.war webapps/ROOT.war
 
 # Change connector to use system property
-RUN sed -i 's/port="8080"/port="${port.http}"/' conf/server.xml
+//RUN sed -i 's/port="8080"/port="${port.http}"/' conf/server.xml
 
 EXPOSE 8080
 
