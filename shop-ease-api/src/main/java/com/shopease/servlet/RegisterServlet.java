@@ -52,6 +52,13 @@ public class RegisterServlet extends HttpServlet {
         response.setHeader("Vary", "Origin"); // prevents caching issues
     }
 
+    //temporary test
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        response.getWriter().write("Signup endpoint working. Use POST.");
+    }
+
     // ===== Handle preflight OPTIONS requests =====
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response)
