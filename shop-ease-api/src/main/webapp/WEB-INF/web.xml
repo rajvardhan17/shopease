@@ -6,14 +6,14 @@
          version="4.0">
 
     <!-- ===================== Register Servlet ===================== -->
-    <servlet>
+    <!--servlet>
         <servlet-name>RegisterServlet</servlet-name>
         <servlet-class>com.shopease.servlet.RegisterServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>RegisterServlet</servlet-name>
-        <url-pattern>/api/user/signup</url-pattern> <!-- Matches frontend call -->
-    </servlet-mapping>
+        <url-pattern>/api/user/signup</url-pattern> <! Matches frontend call >
+    </servlet-mapping-->
 
     <!-- ===================== Login Servlet ===================== -->
     <servlet>
