@@ -35,42 +35,29 @@ public class DatabaseConnection {
     }
 
     public static Connection getConnection() {
-    try {
-        String databaseUrl = System.getenv("MYSQL_URL");
+        try {
+            String host = System.getenv("MYSQLHOST");
+            String port = System.getenv("MYSQLPORT");
+            String database = System.getenv("MYSQLDATABASE");
+            String username = System.getenv("MYSQLUSER");
+            String password = System.getenv("MYSQLPASSWORD");
 
-        if (databaseUrl == null) {
-            databaseUrl = System.getenv("DATABASE_URL");
+            if (host == null) {
+                throw new RuntimeException("Railway MySQL environment variables not found.");
+            }
+
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
+                    + "?useSSL=true&requireSSL=true&serverTimezone=UTC";
+
+            LOGGER.info("Connecting to: " + jdbcUrl);
+
+            return DriverManager.getConnection(jdbcUrl, username, password);
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Database connection failed", e);
+            return null;
         }
-
-        if (databaseUrl == null) {
-            throw new RuntimeException("No Railway database URL found.");
-        }
-
-        // Parse using URI (safe way)
-        java.net.URI uri = new java.net.URI(databaseUrl);
-
-        String userInfo = uri.getUserInfo(); // user:password
-        String[] credentials = userInfo.split(":");
-
-        String username = credentials[0];
-        String password = credentials[1];
-
-        String host = uri.getHost();
-        int port = uri.getPort();
-        String database = uri.getPath().replaceFirst("/", "");
-
-        String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
-                + "?useSSL=true&requireSSL=true&serverTimezone=UTC";
-
-        LOGGER.info("Final JDBC URL: " + jdbcUrl);
-
-        return DriverManager.getConnection(jdbcUrl, username, password);
-
-    } catch (Exception e) {
-        LOGGER.log(Level.SEVERE, "Database connection failed", e);
-        return null;
     }
-}
     public static void close(Connection conn, java.sql.Statement stmt, java.sql.ResultSet rs) {
         try {
             if (rs != null) rs.close();
