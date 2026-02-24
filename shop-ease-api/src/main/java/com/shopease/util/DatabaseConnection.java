@@ -42,19 +42,22 @@ public class DatabaseConnection {
             String username = System.getenv("MYSQLUSER");
             String password = System.getenv("MYSQLPASSWORD");
 
-            if (host == null) {
-                throw new RuntimeException("Railway MySQL environment variables not found.");
+            System.out.println("MYSQLHOST=" + host);
+            System.out.println("MYSQLPORT=" + port);
+            System.out.println("MYSQLDATABASE=" + database);
+            System.out.println("MYSQLUSER=" + username);
+
+            if (host == null || port == null) {
+                throw new RuntimeException("Railway MySQL environment variables missing.");
             }
 
-            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
-                    + "?useSSL=true&requireSSL=true&serverTimezone=UTC";
-
-            LOGGER.info("Connecting to: " + jdbcUrl);
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database +
+                    "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
             return DriverManager.getConnection(jdbcUrl, username, password);
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Database connection failed", e);
+            e.printStackTrace();
             return null;
         }
     }
