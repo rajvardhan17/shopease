@@ -21,7 +21,7 @@ public class DatabaseUtil {
     }
 
     public static Connection getConnection() {
-        String host = System.getenv("MYSQLHOST");
+        String host = System.getenv("MYSQL_URL");
         String port = System.getenv("MYSQLPORT");
         String database = System.getenv("MYSQLDATABASE");
         String user = System.getenv("MYSQLUSER");
