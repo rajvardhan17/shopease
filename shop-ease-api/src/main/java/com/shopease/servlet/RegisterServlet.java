@@ -27,31 +27,37 @@ public class RegisterServlet extends HttpServlet {
 
     // ===== Helper method for CORS headers =====
     private void setCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
-        // List of allowed origins for development
-        String[] allowedOrigins = {"http://localhost:8080", "http://localhost:3000", "http://192.168.56.1:8080", "http://192.168.1.3:8080"};
+
+        String[] allowedOrigins = {
+                "http://localhost:8080",
+                "http://localhost:3000",
+                "http://192.168.56.1:8080",
+                "http://192.168.1.3:8080"
+        };
 
         String origin = request.getHeader("Origin");
 
         if (origin != null) {
             for (String allowedOrigin : allowedOrigins) {
-                if (allowedOrigin.equals(origin)) {
+                if (allowedOrigin.equalsIgnoreCase(origin)) {
                     response.setHeader("Access-Control-Allow-Origin", origin);
                     break;
                 }
             }
         }
 
-        // Optional: set a default for development if no match
+        // If no match found → allow nothing (safer)
         if (response.getHeader("Access-Control-Allow-Origin") == null) {
-            // response.setHeader("Access-Control-Allow-Origin", "http://localhost:8080");
+            // You can uncomment this for development only:
+            // response.setHeader("Access-Control-Allow-Origin", "*");
         }
 
         response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
-        response.setHeader("Vary", "Origin"); // prevents caching issues
+        response.setHeader("Access-Control-Max-Age", "3600");
+        response.setHeader("Vary", "Origin");
     }
-
     // ===== Handle preflight OPTIONS requests =====
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response)
@@ -149,10 +155,10 @@ System.out.println("Method: " + request.getMethod());
             }
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error during registration", e);
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             jsonResponse.put("success", false);
-            jsonResponse.put("message", "Server error: " + e.getMessage());
+            jsonResponse.put("message", e.toString());
         }
 
         objectMapper.writeValue(response.getOutputStream(), jsonResponse);
