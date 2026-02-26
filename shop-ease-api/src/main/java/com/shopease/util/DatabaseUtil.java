@@ -40,8 +40,8 @@ public class DatabaseUtil {
             return conn;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database connection failed", e);
-            return null;
+                LOGGER.log(Level.SEVERE, "Database connection failed", e);
+                return null;   // ⚠️ THIS IS THE PROBLEM
         }
     }
 }
