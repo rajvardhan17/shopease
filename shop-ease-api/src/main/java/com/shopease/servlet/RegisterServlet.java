@@ -65,6 +65,8 @@ public class RegisterServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+                System.out.println("=== doPost HIT ===");
+System.out.println("Method: " + request.getMethod());
         setCorsHeaders(request, response);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
