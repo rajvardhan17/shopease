@@ -15,33 +15,45 @@ public class DatabaseUtil {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             LOGGER.log(Level.SEVERE, "MySQL Driver not found", e);
+            throw new RuntimeException("MySQL Driver not found", e);
         }
     }
 
     public static Connection getConnection() {
+
+        String host = System.getenv("MYSQLHOST");
+        String port = System.getenv("MYSQLPORT");
+        String database = System.getenv("MYSQLDATABASE");
+        String user = System.getenv("MYSQLUSER");
+        String password = System.getenv("MYSQLPASSWORD");
+
+        // ✅ Validate environment variables
+        if (isEmpty(host) || isEmpty(port) || isEmpty(database)
+                || isEmpty(user) || isEmpty(password)) {
+
+            throw new RuntimeException(
+                    "Missing Railway MySQL environment variables. " +
+                            "Check MYSQLHOST, MYSQLPORT, MYSQLDATABASE, MYSQLUSER, MYSQLPASSWORD"
+            );
+        }
+
+        String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
+                + "?useSSL=false"
+                + "&allowPublicKeyRetrieval=true"
+                + "&serverTimezone=UTC";
+
         try {
-
-            String host = System.getenv("MYSQLHOST");
-            String port = System.getenv("MYSQLPORT");
-            String database = System.getenv("MYSQLDATABASE");
-            String user = System.getenv("MYSQLUSER");
-            String password = System.getenv("MYSQLPASSWORD");
-
-            if (host == null) {
-                throw new RuntimeException("Railway MySQL environment variables not found.");
-            }
-
-            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
-                    + "?useSSL=false&allowPublicKeyRetrieval=true";
-
             Connection conn = DriverManager.getConnection(jdbcUrl, user, password);
-
-            LOGGER.info("Connected to Railway MySQL successfully!");
+            LOGGER.info("✅ Connected to Railway MySQL successfully!");
             return conn;
 
         } catch (SQLException e) {
-                LOGGER.log(Level.SEVERE, "Database connection failed", e);
-                return null;   // ⚠️ THIS IS THE PROBLEM
+            LOGGER.log(Level.SEVERE, "❌ Database connection failed. URL: " + jdbcUrl, e);
+            throw new RuntimeException("Database connection failed", e);
         }
+    }
+
+    private static boolean isEmpty(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }
