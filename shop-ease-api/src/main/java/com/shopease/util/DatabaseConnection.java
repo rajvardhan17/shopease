@@ -36,25 +36,22 @@ public class DatabaseConnection {
 
     public static Connection getConnection() {
         try {
-            String host = System.getenv("MYSQL_URL");
-            String port = System.getenv("MYSQLPORT");
-            String database = System.getenv("MYSQLDATABASE");
-            String username = System.getenv("MYSQLUSER");
-            String password = System.getenv("MYSQLPASSWORD");
+            String url = System.getenv("MYSQL_URL");
 
-            System.out.println("HOST=" + host);
-            System.out.println("PORT=" + port);
+            System.out.println("MYSQL_URL = " + url);
 
-            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
-                    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+            if (url == null || url.isEmpty()) {
+                throw new RuntimeException("MYSQL_URL not found in environment variables");
+            }
 
-            return DriverManager.getConnection(jdbcUrl, username, password);
+            return DriverManager.getConnection(url);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            throw new RuntimeException("Database connection failed", e);
         }
     }
+    
     public static void close(Connection conn, java.sql.Statement stmt, java.sql.ResultSet rs) {
         try {
             if (rs != null) rs.close();
