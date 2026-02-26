@@ -47,8 +47,9 @@ public class DatabaseUtil {
             return conn;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database connection failed. URL: " + jdbcUrl, e);
-            throw new RuntimeException("Database connection failed", e);
+                e.printStackTrace();   // VERY IMPORTANT
+                LOGGER.log(Level.SEVERE, "Database connection failed. URL: " + jdbcUrl, e);
+                throw new RuntimeException("Database connection failed", e);
         }
     }
 
