@@ -1,4 +1,4 @@
-/*package com.shopease.util;
+package com.shopease.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
