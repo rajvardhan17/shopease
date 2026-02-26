@@ -1,64 +1,47 @@
 package com.shopease.util;
 
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 public class DatabaseConnection {
 
-    private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
-
     static {
-        setupLogging();
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            LOGGER.info("MySQL JDBC Driver loaded successfully.");
+            System.out.println("MySQL Driver loaded");
         } catch (ClassNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "MySQL JDBC Driver not found.", e);
-        }
-    }
-
-    private static void setupLogging() {
-        try (InputStream configFile = DatabaseConnection.class.getClassLoader()
-                .getResourceAsStream("logging.properties")) {
-
-            if (configFile != null) {
-                LogManager.getLogManager().readConfiguration(configFile);
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error loading logging configuration.", e);
+            throw new RuntimeException("MySQL Driver not found", e);
         }
     }
 
     public static Connection getConnection() {
         try {
-            String url = System.getenv("MYSQL_URL");
+            String host = System.getenv("MYSQLHOST");
+            String port = System.getenv("MYSQLPORT");
+            String database = System.getenv("MYSQLDATABASE");
+            String username = System.getenv("MYSQLUSER");
+            String password = System.getenv("MYSQLPASSWORD");
 
-            System.out.println("MYSQL_URL = " + url);
+            System.out.println("HOST=" + host);
+            System.out.println("PORT=" + port);
+            System.out.println("DB=" + database);
+            System.out.println("USER=" + username);
 
-            if (url == null || url.isEmpty()) {
-                throw new RuntimeException("MYSQL_URL not found in environment variables");
+            if (host == null || port == null || database == null ||
+                    username == null || password == null) {
+
+                throw new RuntimeException("One or more MySQL environment variables are NULL");
             }
 
-            return DriverManager.getConnection(url);
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
+                    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
-        } catch (Exception e) {
+            return DriverManager.getConnection(jdbcUrl, username, password);
+
+        } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Database connection failed", e);
-        }
-    }
-    
-    public static void close(Connection conn, java.sql.Statement stmt, java.sql.ResultSet rs) {
-        try {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
-            if (conn != null) conn.close();
-        } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, "Error while closing DB resources.", e);
         }
     }
 }
