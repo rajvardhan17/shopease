@@ -13,6 +13,7 @@ public class DatabaseUtil {
     static {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
+            LOGGER.info("MySQL JDBC Driver loaded successfully.");
         } catch (ClassNotFoundException e) {
             LOGGER.log(Level.SEVERE, "MySQL Driver not found", e);
             throw new RuntimeException("MySQL Driver not found", e);
@@ -20,14 +21,12 @@ public class DatabaseUtil {
     }
 
     public static Connection getConnection() {
-
         String host = System.getenv("MYSQLHOST");
         String port = System.getenv("MYSQLPORT");
         String database = System.getenv("MYSQLDATABASE");
         String user = System.getenv("MYSQLUSER");
         String password = System.getenv("MYSQLPASSWORD");
 
-        // ✅ Validate environment variables
         if (isEmpty(host) || isEmpty(port) || isEmpty(database)
                 || isEmpty(user) || isEmpty(password)) {
 
@@ -37,18 +36,18 @@ public class DatabaseUtil {
             );
         }
 
-        String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
-                + "?useSSL=false"
-                + "&allowPublicKeyRetrieval=true"
-                + "&serverTimezone=UTC";
+        String jdbcUrl = String.format(
+                "jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC",
+                host, port, database
+        );
 
         try {
             Connection conn = DriverManager.getConnection(jdbcUrl, user, password);
-            LOGGER.info("✅ Connected to Railway MySQL successfully!");
+            LOGGER.info("Connected to Railway MySQL successfully!");
             return conn;
 
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "❌ Database connection failed. URL: " + jdbcUrl, e);
+            LOGGER.log(Level.SEVERE, "Database connection failed. URL: " + jdbcUrl, e);
             throw new RuntimeException("Database connection failed", e);
         }
     }

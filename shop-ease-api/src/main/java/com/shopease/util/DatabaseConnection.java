@@ -1,4 +1,4 @@
-package com.shopease.util;
+/*package com.shopease.util;
 
 import java.io.InputStream;
 import java.sql.Connection;
@@ -65,3 +65,4 @@ public class DatabaseConnection {
         }
     }
 }
+*/
