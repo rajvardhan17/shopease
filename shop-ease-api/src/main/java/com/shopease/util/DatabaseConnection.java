@@ -36,25 +36,29 @@ public class DatabaseConnection {
 
     public static Connection getConnection() {
         try {
+            String host = System.getenv("MYSQLHOST");
+            String port = System.getenv("MYSQLPORT");
+            String database = System.getenv("MYSQLDATABASE");
+            String username = System.getenv("MYSQLUSER");
+            String password = System.getenv("MYSQLPASSWORD");
 
-            // Railway usually provides this
-            String mysqlUrl = System.getenv("MYSQL_URL");
+            System.out.println("MYSQLHOST=" + host);
+            System.out.println("MYSQLPORT=" + port);
+            System.out.println("MYSQLDATABASE=" + database);
+            System.out.println("MYSQLUSER=" + username);
 
-            // Some projects use DATABASE_URL instead
-            if (mysqlUrl == null) {
-                mysqlUrl = System.getenv("DATABASE_URL");
+            if (host == null || port == null) {
+                throw new RuntimeException("Railway MySQL environment variables missing.");
             }
 
-            if (mysqlUrl == null) {
-                throw new RuntimeException("No MYSQL_URL or DATABASE_URL found in Railway environment variables.");
-            }
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database +
+                    "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
-            System.out.println("Using DB URL: " + mysqlUrl);
+            return DriverManager.getConnection(jdbcUrl, username, password);
 
-            return DriverManager.getConnection(mysqlUrl);
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Database connection failed", e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
     public static void close(Connection conn, java.sql.Statement stmt, java.sql.ResultSet rs) {
