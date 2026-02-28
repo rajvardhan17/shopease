@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -144,7 +145,7 @@ const Footer = () => {
               className="text-sm text-muted-foreground cursor-pointer select-none"
               onClick={handleSecretClick}
               title="©">
-                © {currentYear} Rajvardhan Singh. All rights reserved.
+              © {currentYear} Rajvardhan Singh. All rights reserved.
           </p>
           </div>
           
