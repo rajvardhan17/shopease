@@ -15,7 +15,7 @@ const Footer = () => {
       navigate("/admin");
       setClickCount(0); // reset after success
     }
-    
+  };
   const footerLinks: Record<string, { name: string; href: string }[]> = {
     Shop: [
       { name: "Men", href: "/men" },
