@@ -24,27 +24,21 @@ public class DatabaseConnection {
             String username = System.getenv("MYSQLUSER");
             String password = System.getenv("MYSQLPASSWORD");
 
-            System.out.println("HOST=" + host);
-            System.out.println("PORT=" + port);
-            System.out.println("DB=" + database);
-            System.out.println("USER=" + username);
-
             if (host == null || port == null || database == null ||
                     username == null || password == null) {
-
-                throw new RuntimeException("❌ MySQL environment variables are missing");
+                throw new RuntimeException("MySQL environment variables missing");
             }
 
-            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database +
-                    "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
+                    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
-            System.out.println("JDBC URL=" + jdbcUrl);
+            System.out.println("FINAL JDBC URL: " + jdbcUrl);
 
             return DriverManager.getConnection(jdbcUrl, username, password);
 
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("❌ Database connection failed", e);
+            throw new RuntimeException("Database connection failed", e);
         }
     }
 }
