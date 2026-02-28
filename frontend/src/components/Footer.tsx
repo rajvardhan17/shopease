@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
