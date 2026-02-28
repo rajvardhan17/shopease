@@ -3,6 +3,19 @@ import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
+  const [clickCount, setClickCount] = useState(0);
+  const navigate = useNavigate();
+
+  const handleSecretClick = () => {
+    const next = clickCount + 1;
+    setClickCount(next);
+
+    if (next === 5) {
+      navigate("/admin");
+      setClickCount(0); // reset after success
+    }
+    
   const footerLinks: Record<string, { name: string; href: string }[]> = {
     Shop: [
       { name: "Men", href: "/men" },
@@ -126,9 +139,13 @@ const Footer = () => {
           className="border-t border-primary-foreground/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center"
         >
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <span className="text-primary-foreground/70">© 2025 ShopEase. Made with</span>
-            <Heart className="w-4 h-4 text-red-400" fill="currentColor" aria-label="love" />
-            <span className="text-primary-foreground/70">for fashion lovers</span>
+            <p
+            className="text-sm text-muted-foreground cursor-pointer select-none"
+            onClick={handleSecretClick}
+            title="©"
+          >
+            © {currentYear} Rajvardhan Singh. All rights reserved.
+          </p>>
           </div>
           
           <div className="flex space-x-6">
