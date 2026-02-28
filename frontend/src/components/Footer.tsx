@@ -139,13 +139,12 @@ const Footer = () => {
           className="border-t border-primary-foreground/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center"
         >
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <p
-            className="text-sm text-muted-foreground cursor-pointer select-none"
-            onClick={handleSecretClick}
-            title="©"
-          >
-            © {currentYear} Rajvardhan Singh. All rights reserved.
-          </p>>
+            <p 
+              className="text-sm text-muted-foreground cursor-pointer select-none"
+              onClick={handleSecretClick}
+              title="©">
+                © {currentYear} Rajvardhan Singh. All rights reserved.
+          </p>
           </div>
           
           <div className="flex space-x-6">
