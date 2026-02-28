@@ -35,10 +35,10 @@ public class DatabaseConnection {
                 throw new RuntimeException("❌ MySQL environment variables are missing");
             }
 
-            String jdbcUrl = "mysql://root:cUQFhyaDFxWaNNRTUnSHDjtLpqlsVAJz@mysql.railway.internal:3306/railway
-                    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database +
+                    "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
-            System.out.println("JDBC URL = " + jdbcUrl);
+            System.out.println("JDBC URL=" + jdbcUrl);
 
             return DriverManager.getConnection(jdbcUrl, username, password);
 
