@@ -29,7 +29,7 @@ public class DatabaseConnection {
                 throw new RuntimeException("MySQL environment variables missing");
             }
 
-            String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database
+            String jdbcUrl = "jdbc:+ host + ":" + port + "/" + database
                     + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
             System.out.println("FINAL JDBC URL: " + jdbcUrl);
