@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class DatabaseConnection {
+public final class DatabaseConnection {
 
     static {
         try {
@@ -15,26 +15,32 @@ public class DatabaseConnection {
         }
     }
 
+    private DatabaseConnection() {
+        // Prevent instantiation
+    }
+
     public static Connection getConnection() {
 
+        String railwayUrl = System.getenv("MYSQL_URL");
+
+        if (railwayUrl == null || railwayUrl.trim().isEmpty()) {
+            throw new RuntimeException("MYSQL_URL environment variable not found.");
+        }
+
         try {
-            String host = System.getenv("MYSQLHOST");
-            String port = System.getenv("MYSQLPORT");
-            String database = System.getenv("MYSQLDATABASE");
-            String username = System.getenv("MYSQLUSER");
-            String password = System.getenv("MYSQLPASSWORD");
+            // Convert Railway URL to proper JDBC format
+            String jdbcUrl = railwayUrl.replace("mysql://", "jdbc:mysql://");
 
-            if (host == null || port == null || database == null ||
-                    username == null || password == null) {
-                throw new RuntimeException("MySQL environment variables missing");
+            // Add required JDBC parameters
+            if (!jdbcUrl.contains("?")) {
+                jdbcUrl += "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+            } else {
+                jdbcUrl += "&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
             }
-
-            String jdbcUrl = "jdbc:mysql://" + /*host*/ "mysql.railway.internal"+ ":" + /*port*/"3306" + "/" + /*database*/"railway"
-                    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
             System.out.println("FINAL JDBC URL: " + jdbcUrl);
 
-            return DriverManager.getConnection(jdbcUrl, /*username*/"root", /*password*/"cUQFhyaDFxWaNNRTUnSHDjtLpqlsVAJz");
+            return DriverManager.getConnection(jdbcUrl);
 
         } catch (SQLException e) {
             e.printStackTrace();

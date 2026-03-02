@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DatabaseUtil {
+public final class DatabaseUtil {
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseUtil.class.getName());
 
@@ -15,47 +15,40 @@ public class DatabaseUtil {
             Class.forName("com.mysql.cj.jdbc.Driver");
             LOGGER.info("MySQL JDBC Driver loaded successfully.");
         } catch (ClassNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "MySQL Driver not found", e);
-            throw new RuntimeException("MySQL Driver not found", e);
+            LOGGER.log(Level.SEVERE, "MySQL Driver not found.", e);
+            throw new RuntimeException("MySQL Driver not found.", e);
         }
+    }
+
+    private DatabaseUtil() {
+        // Prevent instantiation
     }
 
     public static Connection getConnection() {
-        String host = System.getenv("MYSQL_URL");
-        String port = System.getenv("MYSQLPORT");
-        String database = System.getenv("MYSQLDATABASE");
-        String user = System.getenv("MYSQLUSER");
-        String password = System.getenv("MYSQLPASSWORD");
 
-        if (isEmpty(host) || isEmpty(port) || isEmpty(database)
-                || isEmpty(user) || isEmpty(password)) {
+        String railwayUrl = System.getenv("MYSQL_URL");
 
+        if (railwayUrl == null || railwayUrl.trim().isEmpty()) {
             throw new RuntimeException(
-                    "Missing Railway MySQL environment variables. " +
-                            "Check MYSQLHOST, MYSQLPORT, MYSQLDATABASE, MYSQLUSER, MYSQLPASSWORD"
+                    "MYSQL_URL environment variable not found. " +
+                            "Ensure Railway MySQL is properly configured."
             );
         }
 
-        String jdbcUrl = String.format(
-                //"jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC",
-                //host, port, database
-                "jdbc:mysql://" + /*host*/ "mysql.railway.internal"+ ":" + /*port*/"3306" + "/" + /*database*/"railway" + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-
-        );
-
         try {
-            Connection conn = DriverManager.getConnection(jdbcUrl, user, password);
-            LOGGER.info("Connected to Railway MySQL successfully!");
-            return conn;
+            // Convert Railway URL to JDBC format
+            String jdbcUrl = railwayUrl
+                    .replace("mysql://", "jdbc:mysql://")
+                    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+
+            Connection connection = DriverManager.getConnection(jdbcUrl);
+
+            LOGGER.info("Database connection established successfully.");
+            return connection;
 
         } catch (SQLException e) {
-                e.printStackTrace();   // VERY IMPORTANT
-                LOGGER.log(Level.SEVERE, "Database connection failed. URL: " + jdbcUrl, e);
-                throw new RuntimeException("Database connection failed", e);
+            LOGGER.log(Level.SEVERE, "Database connection failed.", e);
+            throw new RuntimeException("Database connection failed.", e);
         }
-    }
-
-    private static boolean isEmpty(String value) {
-        return value == null || value.trim().isEmpty();
     }
 }
