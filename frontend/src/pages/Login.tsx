@@ -19,7 +19,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-{/*const Login = () => {
+{const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
         variant: "destructive",
       });
     }
-  };*/
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-bg p-4 relative overflow-hidden">
