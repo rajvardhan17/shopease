@@ -6,9 +6,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Set;
 
 @WebFilter("/*")
 public class CorsFilter implements Filter {
+
+    // ✅ Whitelist allowed origins
+    private static final Set<String> ALLOWED_ORIGINS = Set.of(
+            "https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app",
+            "http://localhost:5173"   // for local dev
+    );
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -19,22 +26,19 @@ public class CorsFilter implements Filter {
 
         String origin = req.getHeader("Origin");
 
-        // Allow dynamic origin (better for Railway + production)
-        if (origin != null) {
+        if (origin != null && ALLOWED_ORIGINS.contains(origin)) {
             resp.setHeader("Access-Control-Allow-Origin", origin);
-        } else {
-            resp.setHeader("Access-Control-Allow-Origin", "*");
+            resp.setHeader("Access-Control-Allow-Credentials", "true");
         }
 
-        resp.setHeader("Access-Control-Allow-Credentials", "true");
         resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         resp.setHeader("Access-Control-Max-Age", "3600");
         resp.setHeader("Vary", "Origin");
 
-        // Handle preflight request
+        // ✅ Handle preflight correctly
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
-            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
             return;
         }
 

@@ -28,7 +28,12 @@ public class LoginServlet extends HttpServlet {
     // ===== Helper method for CORS headers =====
     private void setCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
         // List of allowed origins for development
-        String[] allowedOrigins = {"http://localhost:8080", "http://localhost:3000", "http://192.168.56.1:8080", "http://192.168.1.3:8080"};
+        String[] allowedOrigins = {"http://localhost:8080",
+                                    "http://localhost:3000",
+                                    "http://192.168.56.1:8080",
+                                    "http://192.168.1.3:8080",
+                                    "https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app"
+        };
 
         String origin = request.getHeader("Origin");
 
