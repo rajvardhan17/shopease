@@ -29,12 +29,12 @@ public class DatabaseConnection {
                 throw new RuntimeException("MySQL environment variables missing");
             }
 
-            String jdbcUrl = "jdbc:" + host + ":" + port + "/" + database
+            String jdbcUrl = "jdbc:mysql://" + /*host*/ "mysql.railway.internal"+ ":" + /*port*/"3306" + "/" + /*database*/"railway"
                     + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
             System.out.println("FINAL JDBC URL: " + jdbcUrl);
 
-            return DriverManager.getConnection(jdbcUrl, username, password);
+            return DriverManager.getConnection(jdbcUrl, /*username*/"root", /*password*/"cUQFhyaDFxWaNNRTUnSHDjtLpqlsVAJz");
 
         } catch (SQLException e) {
             e.printStackTrace();
