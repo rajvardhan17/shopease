@@ -14,7 +14,7 @@ const Footer = () => {
     setClickCount(next);
 
     if (next === 5) {
-      navigate("/api/login");
+      navigate("/login");
       setClickCount(0); // reset after success
     }
   };
