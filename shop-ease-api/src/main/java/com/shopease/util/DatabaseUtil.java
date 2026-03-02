@@ -37,8 +37,10 @@ public class DatabaseUtil {
         }
 
         String jdbcUrl = String.format(
-                "jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC",
-                host, port, database
+                //"jdbc:mysql://%s:%s/%s?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC",
+                //host, port, database
+                "jdbc:mysql://" + /*host*/ "mysql.railway.internal"+ ":" + /*port*/"3306" + "/" + /*database*/"railway" + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+
         );
 
         try {
