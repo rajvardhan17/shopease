@@ -15,10 +15,6 @@ public final class DatabaseConnection {
         }
     }
 
-    private DatabaseConnection() {
-        // Prevent instantiation
-    }
-
     public static Connection getConnection() {
 
         String railwayUrl = System.getenv("MYSQL_URL");
@@ -28,20 +24,17 @@ public final class DatabaseConnection {
         }
 
         try {
-            // Convert Railway URL to proper JDBC format
-            String jdbcUrl = railwayUrl.replace("mysql://", "jdbc:mysql://");
 
-            // Add required JDBC parameters
-            if (!jdbcUrl.contains("?")) {
-                jdbcUrl += "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-            } else {
-                jdbcUrl += "&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-            }
+            String host = System.getenv("MYSQLHOST");
+            String port = System.getenv("MYSQLPORT");
+            String database = System.getenv("MYSQLDATABASE");
+            String user = System.getenv("MYSQLUSER");
+            String password = System.getenv("MYSQLPASSWORD");
 
-            System.out.println("FINAL JDBC URL: " + jdbcUrl);
+            String url = "jdbc:mysql://"+host+ ":" + port + "/" + database
+                    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
-            return DriverManager.getConnection(jdbcUrl);
-
+            Connection conn = DriverManager.getConnection(url, user, password);
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Database connection failed", e);
