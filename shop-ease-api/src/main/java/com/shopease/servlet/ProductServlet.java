@@ -16,32 +16,22 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//@WebServlet("/api/products/*")
+@WebServlet("/api/products/*")
 public class ProductServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ProductServlet.class.getName());
     private final ProductDAO productDAO = new ProductDAO();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    // ===== CORS helper =====
+    // ================= CORS =================
     private void setCorsHeaders(HttpServletRequest req, HttpServletResponse resp) {
-        String[] allowedOrigins = {
-                "http://localhost:8080",
-                "http://localhost:3000",
-                "http://192.168.56.1:8080",
-                "http://192.168.1.3:8080",
-                "https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app"
-        };
+
         String origin = req.getHeader("Origin");
+
         if (origin != null) {
-            for (String allowedOrigin : allowedOrigins) {
-                if (allowedOrigin.equals(origin)) {
-                    resp.setHeader("Access-Control-Allow-Origin", origin);
-                    break;
-                }
-            }
+            resp.setHeader("Access-Control-Allow-Origin", origin);
         }
-        resp.setHeader("Access-Control-Allow-Credentials", "true");
+
         resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
         resp.setHeader("Vary", "Origin");
@@ -54,59 +44,49 @@ public class ProductServlet extends HttpServlet {
     }
 
     private boolean isAdmin(HttpSession session) {
-        return session != null && session.getAttribute("user") != null
-                && "admin".equals(((User) session.getAttribute("user")).getRole());
+        return session != null &&
+                session.getAttribute("user") != null &&
+                "admin".equals(((User) session.getAttribute("user")).getRole());
     }
 
-    // ===== GET products / single product / variants =====
+    // ================= GET (PUBLIC) =================
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         setCorsHeaders(req, resp);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
         Map<String, Object> result = new HashMap<>();
-        HttpSession session = req.getSession(false);
-
-        if (session == null || session.getAttribute("user") == null) {
-            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            result.put("success", false);
-            result.put("message", "Login required");
-            mapper.writeValue(resp.getOutputStream(), result);
-            return;
-        }
 
         try {
-            String pathInfo = req.getPathInfo(); // e.g., / or /{id} or /{id}/variants
+            String pathInfo = req.getPathInfo();
 
+            // GET /api/products
             if (pathInfo == null || pathInfo.equals("/")) {
-                // Fetch all products
+
                 List<Product> products = productDAO.getAllProducts();
+
                 result.put("success", true);
                 result.put("products", products);
-            } else {
-                String[] parts = pathInfo.substring(1).split("/");
+            }
 
-                String productId = parts[0];
+            // GET /api/products/{id}
+            else {
+                String productId = pathInfo.substring(1);
+
                 Product product = productDAO.getProductById(productId);
 
                 if (product == null) {
-                    // Product not found
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     result.put("success", false);
                     result.put("message", "Product not found");
-                } else if (parts.length == 2 && "variants".equals(parts[1])) {
-                    // Fetch variants for a product
-                    List<ProductVariant> variants = productDAO.getVariantsByProductId(productId);
-                    result.put("success", true);
-                    result.put("product", product);
-                    result.put("variants", variants);
                 } else {
-                    // Single product
+                    List<ProductVariant> variants =
+                            productDAO.getVariantsByProductId(productId);
+
                     result.put("success", true);
                     result.put("product", product);
-                    // Optional: fetch variants too
-                    List<ProductVariant> variants = productDAO.getVariantsByProductId(productId);
                     result.put("variants", variants);
                 }
             }
@@ -121,15 +101,17 @@ public class ProductServlet extends HttpServlet {
         mapper.writeValue(resp.getOutputStream(), result);
     }
 
-    // ===== POST: add product / variant =====
+    // ================= POST (ADMIN ONLY) =================
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         setCorsHeaders(req, resp);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
         Map<String, Object> result = new HashMap<>();
         HttpSession session = req.getSession(false);
+
         if (!isAdmin(session)) {
             resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
             result.put("success", false);
@@ -139,37 +121,33 @@ public class ProductServlet extends HttpServlet {
         }
 
         try {
-            String pathInfo = req.getPathInfo();
-            if ("/variant".equals(pathInfo)) {
-                ProductVariant variant = mapper.readValue(req.getInputStream(), ProductVariant.class);
-                boolean added = productDAO.addVariant(variant);
-                result.put("success", added);
-                result.put("message", added ? "Variant added successfully" : "Failed to add variant");
-            } else {
-                Product product = mapper.readValue(req.getInputStream(), Product.class);
-                boolean added = productDAO.addProduct(product);
-                result.put("success", added);
-                result.put("message", added ? "Product added successfully" : "Failed to add product");
-            }
+            Product product = mapper.readValue(req.getInputStream(), Product.class);
+            boolean added = productDAO.addProduct(product);
+
+            result.put("success", added);
+            result.put("message", added ? "Product added successfully" : "Failed to add product");
+
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error adding product/variant", e);
+            LOGGER.log(Level.SEVERE, "Error adding product", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             result.put("success", false);
-            result.put("message", "Error adding product/variant");
+            result.put("message", "Error adding product");
         }
 
         mapper.writeValue(resp.getOutputStream(), result);
     }
 
-    // ===== PUT: update product / variant =====
+    // ================= PUT (ADMIN ONLY) =================
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         setCorsHeaders(req, resp);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
         Map<String, Object> result = new HashMap<>();
         HttpSession session = req.getSession(false);
+
         if (!isAdmin(session)) {
             resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
             result.put("success", false);
@@ -179,37 +157,33 @@ public class ProductServlet extends HttpServlet {
         }
 
         try {
-            String pathInfo = req.getPathInfo();
-            if ("/variant".equals(pathInfo)) {
-                ProductVariant variant = mapper.readValue(req.getInputStream(), ProductVariant.class);
-                boolean updated = productDAO.updateVariant(variant);
-                result.put("success", updated);
-                result.put("message", updated ? "Variant updated successfully" : "Failed to update variant");
-            } else {
-                Product product = mapper.readValue(req.getInputStream(), Product.class);
-                boolean updated = productDAO.updateProduct(product);
-                result.put("success", updated);
-                result.put("message", updated ? "Product updated successfully" : "Failed to update product");
-            }
+            Product product = mapper.readValue(req.getInputStream(), Product.class);
+            boolean updated = productDAO.updateProduct(product);
+
+            result.put("success", updated);
+            result.put("message", updated ? "Product updated successfully" : "Failed to update product");
+
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating product/variant", e);
+            LOGGER.log(Level.SEVERE, "Error updating product", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             result.put("success", false);
-            result.put("message", "Error updating product/variant");
+            result.put("message", "Error updating product");
         }
 
         mapper.writeValue(resp.getOutputStream(), result);
     }
 
-    // ===== DELETE: product / variant =====
+    // ================= DELETE (ADMIN ONLY) =================
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         setCorsHeaders(req, resp);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
         Map<String, Object> result = new HashMap<>();
         HttpSession session = req.getSession(false);
+
         if (!isAdmin(session)) {
             resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
             result.put("success", false);
@@ -220,33 +194,24 @@ public class ProductServlet extends HttpServlet {
 
         try {
             String pathInfo = req.getPathInfo();
+
             if (pathInfo == null || pathInfo.equals("/")) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 result.put("success", false);
-                result.put("message", "ID required for deletion");
+                result.put("message", "Product ID required");
             } else {
-                String[] parts = pathInfo.substring(1).split("/");
-                if (parts.length == 2 && "variant".equals(parts[0])) {
-                    String variantId = parts[1];
-                    boolean deleted = productDAO.deleteVariant(variantId);
-                    result.put("success", deleted);
-                    result.put("message", deleted ? "Variant deleted successfully" : "Failed to delete variant");
-                } else if (parts.length == 1) {
-                    String productId = parts[0];
-                    boolean deleted = productDAO.deleteProduct(productId);
-                    result.put("success", deleted);
-                    result.put("message", deleted ? "Product deleted successfully" : "Failed to delete product");
-                } else {
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    result.put("success", false);
-                    result.put("message", "Invalid request");
-                }
+                String productId = pathInfo.substring(1);
+                boolean deleted = productDAO.deleteProduct(productId);
+
+                result.put("success", deleted);
+                result.put("message", deleted ? "Product deleted successfully" : "Failed to delete product");
             }
+
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error deleting product/variant", e);
+            LOGGER.log(Level.SEVERE, "Error deleting product", e);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             result.put("success", false);
-            result.put("message", "Error deleting product/variant");
+            result.put("message", "Error deleting product");
         }
 
         mapper.writeValue(resp.getOutputStream(), result);
