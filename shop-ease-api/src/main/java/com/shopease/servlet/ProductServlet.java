@@ -3,16 +3,16 @@ package com.shopease.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopease.dao.ProductDAO;
 import com.shopease.model.Product;
-import com.shopease.model.User;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @WebServlet("/api/products/*")
 public class ProductServlet extends HttpServlet {
@@ -30,8 +30,8 @@ public class ProductServlet extends HttpServlet {
             resp.setHeader("Access-Control-Allow-Origin", origin);
         }
 
-        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
+        resp.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         resp.setHeader("Access-Control-Allow-Credentials", "true");
         resp.setHeader("Vary", "Origin");
     }
@@ -40,12 +40,6 @@ public class ProductServlet extends HttpServlet {
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         setCorsHeaders(req, resp);
         resp.setStatus(HttpServletResponse.SC_OK);
-    }
-
-    private boolean isAdmin(HttpSession session) {
-        return session != null &&
-                session.getAttribute("user") != null &&
-                "admin".equals(((User) session.getAttribute("user")).getRole());
     }
 
     // ================= GET =================
@@ -60,25 +54,20 @@ public class ProductServlet extends HttpServlet {
 
         try {
 
-            String pathInfo = req.getPathInfo();   // /random OR /123
-            String category = req.getParameter("category");
+            String pathInfo = req.getPathInfo(); // /random OR /123
+            String pageParam = req.getParameter("page");
+            String sizeParam = req.getParameter("size");
 
-            List<Product> products = productDAO.getAllProducts();
-
-            // ---- 1️⃣ GET 10 RANDOM PRODUCTS ----
+            // ================= 1️⃣ RANDOM PRODUCTS =================
             if (pathInfo != null && pathInfo.equals("/random")) {
 
-                Collections.shuffle(products);
-                List<Product> randomProducts = products.stream()
-                        .limit(10)
-                        .collect(Collectors.toList());
+                List<Product> randomProducts = productDAO.getRandomProducts(10);
 
                 result.put("success", true);
                 result.put("products", randomProducts);
-
             }
 
-            // ---- 2️⃣ GET SINGLE PRODUCT BY ID ----
+            // ================= 2️⃣ SINGLE PRODUCT =================
             else if (pathInfo != null && pathInfo.length() > 1) {
 
                 String productId = pathInfo.substring(1);
@@ -94,21 +83,18 @@ public class ProductServlet extends HttpServlet {
                 }
             }
 
-            // ---- 3️⃣ FILTER BY CATEGORY ----
-            else if (category != null) {
-
-                List<Product> filtered = products.stream()
-                        .filter(p -> category.equalsIgnoreCase(p.getCategoryId()))
-                        .collect(Collectors.toList());
-
-                result.put("success", true);
-                result.put("products", filtered);
-            }
-
-            // ---- 4️⃣ RETURN ALL PRODUCTS ----
+            // ================= 3️⃣ PAGINATION =================
             else {
+
+                int page = pageParam != null ? Integer.parseInt(pageParam) : 1;
+                int size = sizeParam != null ? Integer.parseInt(sizeParam) : 10;
+
+                List<Product> products = productDAO.getProducts(page, size);
+
                 result.put("success", true);
                 result.put("products", products);
+                result.put("page", page);
+                result.put("size", size);
             }
 
         } catch (Exception e) {
@@ -116,123 +102,6 @@ public class ProductServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             result.put("success", false);
             result.put("message", "Error fetching products");
-        }
-
-        mapper.writeValue(resp.getOutputStream(), result);
-    }
-
-    // ================= POST (ADMIN ONLY) =================
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        setCorsHeaders(req, resp);
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
-        Map<String, Object> result = new HashMap<>();
-        HttpSession session = req.getSession(false);
-
-        if (!isAdmin(session)) {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            result.put("success", false);
-            result.put("message", "Admins only");
-            mapper.writeValue(resp.getOutputStream(), result);
-            return;
-        }
-
-        try {
-            Product product = mapper.readValue(req.getInputStream(), Product.class);
-
-            boolean added = productDAO.addProduct(product);
-
-            result.put("success", added);
-            result.put("message", added ? "Product added successfully" : "Failed to add product");
-
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error adding product", e);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            result.put("success", false);
-            result.put("message", "Error adding product");
-        }
-
-        mapper.writeValue(resp.getOutputStream(), result);
-    }
-
-    // ================= PUT (ADMIN ONLY) =================
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        setCorsHeaders(req, resp);
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
-        Map<String, Object> result = new HashMap<>();
-        HttpSession session = req.getSession(false);
-
-        if (!isAdmin(session)) {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            result.put("success", false);
-            result.put("message", "Admins only");
-            mapper.writeValue(resp.getOutputStream(), result);
-            return;
-        }
-
-        try {
-            Product product = mapper.readValue(req.getInputStream(), Product.class);
-            boolean updated = productDAO.updateProduct(product);
-
-            result.put("success", updated);
-            result.put("message", updated ? "Product updated successfully" : "Failed to update product");
-
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating product", e);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            result.put("success", false);
-            result.put("message", "Error updating product");
-        }
-
-        mapper.writeValue(resp.getOutputStream(), result);
-    }
-
-    // ================= DELETE (ADMIN ONLY) =================
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        setCorsHeaders(req, resp);
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
-        Map<String, Object> result = new HashMap<>();
-        HttpSession session = req.getSession(false);
-
-        if (!isAdmin(session)) {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            result.put("success", false);
-            result.put("message", "Admins only");
-            mapper.writeValue(resp.getOutputStream(), result);
-            return;
-        }
-
-        try {
-            String pathInfo = req.getPathInfo();
-
-            if (pathInfo == null || pathInfo.equals("/")) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                result.put("success", false);
-                result.put("message", "Product ID required");
-            } else {
-                String productId = pathInfo.substring(1);
-                boolean deleted = productDAO.deleteProduct(productId);
-
-                result.put("success", deleted);
-                result.put("message", deleted ? "Product deleted successfully" : "Failed to delete product");
-            }
-
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error deleting product", e);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            result.put("success", false);
-            result.put("message", "Error deleting product");
         }
 
         mapper.writeValue(resp.getOutputStream(), result);

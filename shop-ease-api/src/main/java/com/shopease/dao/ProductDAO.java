@@ -14,7 +14,9 @@ public class ProductDAO {
 
     private static final Logger LOGGER = Logger.getLogger(ProductDAO.class.getName());
 
-    // ==================== Utility Mapper ====================
+    // =====================================================
+    // ================= PRODUCT SECTION ===================
+    // =====================================================
 
     private Product mapProduct(ResultSet rs) throws SQLException {
         Product p = new Product();
@@ -27,139 +29,105 @@ public class ProductDAO {
         p.setFeatured(rs.getBoolean("featured"));
         p.setMetadata(rs.getString("metadata"));
         p.setPrice(rs.getBigDecimal("price"));
+        p.setImageUrl(rs.getString("image_url"));
         p.setCreatedAt(rs.getTimestamp("created_at"));
         p.setUpdatedAt(rs.getTimestamp("updated_at"));
         return p;
     }
 
-    // ==================== Get All ====================
-
     public List<Product> getAllProducts() {
-        List<Product> products = new ArrayList<>();
-        String query = "SELECT * FROM products ORDER BY created_at DESC";
+        String sql = "SELECT * FROM products ORDER BY created_at DESC";
+        List<Product> list = new ArrayList<>();
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
+             PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                products.add(mapProduct(rs));
+                list.add(mapProduct(rs));
             }
 
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching all products", e);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error fetching products", e);
         }
 
-        return products;
+        return list;
     }
 
-    // ==================== Random 10 ====================
-
     public List<Product> getRandomProducts(int limit) {
-        List<Product> products = new ArrayList<>();
-        String query = "SELECT * FROM products ORDER BY RAND() LIMIT ?";
+        String sql = "SELECT * FROM products ORDER BY RAND() LIMIT ?";
+        List<Product> list = new ArrayList<>();
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, limit);
-            ResultSet rs = stmt.executeQuery();
 
-            while (rs.next()) {
-                products.add(mapProduct(rs));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapProduct(rs));
+                }
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching random products", e);
         }
 
-        return products;
+        return list;
     }
-
-    // ==================== Pagination ====================
-
-    public List<Product> getProductsWithPagination(int page, int size) {
-        List<Product> products = new ArrayList<>();
-        int offset = (page - 1) * size;
-
-        String query = "SELECT * FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?";
-
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
-            stmt.setInt(1, size);
-            stmt.setInt(2, offset);
-
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                products.add(mapProduct(rs));
-            }
-
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching paginated products", e);
-        }
-
-        return products;
-    }
-
-    // ==================== Category Filter ====================
 
     public List<Product> getProductsByCategory(String categoryId, int page, int size) {
-        List<Product> products = new ArrayList<>();
+        String sql = "SELECT * FROM products WHERE category_id=? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+        List<Product> list = new ArrayList<>();
         int offset = (page - 1) * size;
 
-        String query = "SELECT * FROM products WHERE category_id=? ORDER BY created_at DESC LIMIT ? OFFSET ?";
-
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, categoryId);
             stmt.setInt(2, size);
             stmt.setInt(3, offset);
 
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                products.add(mapProduct(rs));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapProduct(rs));
+                }
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching category products", e);
         }
 
-        return products;
+        return list;
     }
 
-    // ==================== Get By ID ====================
-
     public Product getProductById(String id) {
-        String query = "SELECT * FROM products WHERE id = ?";
+        String sql = "SELECT * FROM products WHERE id=?";
         Product product = null;
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, id);
-            ResultSet rs = stmt.executeQuery();
 
-            if (rs.next()) {
-                product = mapProduct(rs);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    product = mapProduct(rs);
+                }
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching product by ID", e);
         }
 
         return product;
     }
 
-    // ==================== Add Product (NO manual ID) ====================
-
     public boolean addProduct(Product product) {
-
-        String query = "INSERT INTO products (title, short_description, description, category_id, status, featured, metadata, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO products (title, short_description, description, category_id, status, featured, metadata, price, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, product.getTitle());
             stmt.setString(2, product.getShortDescription());
@@ -169,24 +137,21 @@ public class ProductDAO {
             stmt.setBoolean(6, product.isFeatured());
             stmt.setString(7, product.getMetadata());
             stmt.setBigDecimal(8, product.getPrice());
+            stmt.setString(9, product.getImageUrl());
 
             return stmt.executeUpdate() > 0;
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error adding product", e);
+            return false;
         }
-
-        return false;
     }
-
-    // ==================== Update ====================
 
     public boolean updateProduct(Product product) {
-
-        String query = "UPDATE products SET title=?, short_description=?, description=?, category_id=?, status=?, featured=?, metadata=?, price=? WHERE id=?";
+        String sql = "UPDATE products SET title=?, short_description=?, description=?, category_id=?, status=?, featured=?, metadata=?, price=?, image_url=? WHERE id=?";
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, product.getTitle());
             stmt.setString(2, product.getShortDescription());
@@ -196,33 +161,121 @@ public class ProductDAO {
             stmt.setBoolean(6, product.isFeatured());
             stmt.setString(7, product.getMetadata());
             stmt.setBigDecimal(8, product.getPrice());
-            stmt.setString(9, product.getId());
+            stmt.setString(9, product.getImageUrl());
+            stmt.setString(10, product.getId());
 
             return stmt.executeUpdate() > 0;
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error updating product", e);
+            return false;
         }
-
-        return false;
     }
 
-    // ==================== Delete ====================
-
     public boolean deleteProduct(String id) {
-
-        String query = "DELETE FROM products WHERE id=?";
+        String sql = "DELETE FROM products WHERE id=?";
 
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, id);
             return stmt.executeUpdate() > 0;
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error deleting product", e);
+            return false;
+        }
+    }
+
+    // =====================================================
+    // ================= VARIANT SECTION ===================
+    // =====================================================
+
+    private ProductVariant mapVariant(ResultSet rs) throws SQLException {
+        ProductVariant v = new ProductVariant();
+        v.setId(rs.getString("id"));
+        v.setProductId(rs.getString("product_id"));
+        v.setSize(rs.getString("size"));
+        v.setColor(rs.getString("color"));
+        v.setStock(rs.getInt("stock"));
+        v.setPrice(rs.getBigDecimal("price"));
+        return v;
+    }
+
+    public List<ProductVariant> getVariantsByProductId(String productId) {
+        String sql = "SELECT * FROM product_variants WHERE product_id=?";
+        List<ProductVariant> list = new ArrayList<>();
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, productId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapVariant(rs));
+                }
+            }
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error fetching variants", e);
         }
 
-        return false;
+        return list;
+    }
+
+    public boolean addVariant(ProductVariant variant) {
+        String sql = "INSERT INTO product_variants (product_id, size, color, stock, price) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, variant.getProductId());
+            stmt.setString(2, variant.getSize());
+            stmt.setString(3, variant.getColor());
+            stmt.setInt(4, variant.getStock());
+            stmt.setBigDecimal(5, variant.getPrice());
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error adding variant", e);
+            return false;
+        }
+    }
+
+    public boolean updateVariant(ProductVariant variant) {
+        String sql = "UPDATE product_variants SET size=?, color=?, stock=?, price=? WHERE id=?";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, variant.getSize());
+            stmt.setString(2, variant.getColor());
+            stmt.setInt(3, variant.getStock());
+            stmt.setBigDecimal(4, variant.getPrice());
+            stmt.setString(5, variant.getId());
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error updating variant", e);
+            return false;
+        }
+    }
+
+    public boolean deleteVariant(String id) {
+        String sql = "DELETE FROM product_variants WHERE id=?";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, id);
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error deleting variant", e);
+            return false;
+        }
     }
 }
