@@ -3,18 +3,16 @@ package com.shopease.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopease.dao.ProductDAO;
 import com.shopease.model.Product;
-import com.shopease.model.ProductVariant;
 import com.shopease.model.User;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @WebServlet("/api/products/*")
 public class ProductServlet extends HttpServlet {
@@ -34,6 +32,7 @@ public class ProductServlet extends HttpServlet {
 
         resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
+        resp.setHeader("Access-Control-Allow-Credentials", "true");
         resp.setHeader("Vary", "Origin");
     }
 
@@ -49,7 +48,7 @@ public class ProductServlet extends HttpServlet {
                 "admin".equals(((User) session.getAttribute("user")).getRole());
     }
 
-    // ================= GET (PUBLIC) =================
+    // ================= GET =================
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
@@ -60,35 +59,56 @@ public class ProductServlet extends HttpServlet {
         Map<String, Object> result = new HashMap<>();
 
         try {
-            String pathInfo = req.getPathInfo();
 
-            // GET /api/products
-            if (pathInfo == null || pathInfo.equals("/")) {
+            String pathInfo = req.getPathInfo();   // /random OR /123
+            String category = req.getParameter("category");
 
-                List<Product> products = productDAO.getAllProducts();
+            List<Product> products = productDAO.getAllProducts();
+
+            // ---- 1️⃣ GET 10 RANDOM PRODUCTS ----
+            if (pathInfo != null && pathInfo.equals("/random")) {
+
+                Collections.shuffle(products);
+                List<Product> randomProducts = products.stream()
+                        .limit(10)
+                        .collect(Collectors.toList());
 
                 result.put("success", true);
-                result.put("products", products);
+                result.put("products", randomProducts);
+
             }
 
-            // GET /api/products/{id}
-            else {
-                String productId = pathInfo.substring(1);
+            // ---- 2️⃣ GET SINGLE PRODUCT BY ID ----
+            else if (pathInfo != null && pathInfo.length() > 1) {
 
+                String productId = pathInfo.substring(1);
                 Product product = productDAO.getProductById(productId);
 
-                if (product == null) {
+                if (product != null) {
+                    result.put("success", true);
+                    result.put("product", product);
+                } else {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     result.put("success", false);
                     result.put("message", "Product not found");
-                } else {
-                    List<ProductVariant> variants =
-                            productDAO.getVariantsByProductId(productId);
-
-                    result.put("success", true);
-                    result.put("product", product);
-                    result.put("variants", variants);
                 }
+            }
+
+            // ---- 3️⃣ FILTER BY CATEGORY ----
+            else if (category != null) {
+
+                List<Product> filtered = products.stream()
+                        .filter(p -> category.equalsIgnoreCase(p.getCategoryId()))
+                        .collect(Collectors.toList());
+
+                result.put("success", true);
+                result.put("products", filtered);
+            }
+
+            // ---- 4️⃣ RETURN ALL PRODUCTS ----
+            else {
+                result.put("success", true);
+                result.put("products", products);
             }
 
         } catch (Exception e) {
@@ -122,6 +142,7 @@ public class ProductServlet extends HttpServlet {
 
         try {
             Product product = mapper.readValue(req.getInputStream(), Product.class);
+
             boolean added = productDAO.addProduct(product);
 
             result.put("success", added);
