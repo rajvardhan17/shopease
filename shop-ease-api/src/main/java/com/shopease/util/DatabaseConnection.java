@@ -15,30 +15,31 @@ public final class DatabaseConnection {
         }
     }
 
-    public static void getConnection() {
-
-        String railwayUrl = System.getenv("MYSQL_URL");
-
-        if (railwayUrl == null || railwayUrl.trim().isEmpty()) {
-            throw new RuntimeException("MYSQL_URL environment variable not found.");
-        }
+    public static Connection getConnection() {
 
         try {
-
             String host = System.getenv("MYSQLHOST");
             String port = System.getenv("MYSQLPORT");
             String database = System.getenv("MYSQLDATABASE");
             String user = System.getenv("MYSQLUSER");
             String password = System.getenv("MYSQLPASSWORD");
 
-            String url = "jdbc:mysql://"+host+ ":" + port + "/" + database
+            if (host == null || port == null || database == null ||
+                    user == null || password == null) {
+
+                throw new RuntimeException("❌ One or more MySQL environment variables are missing.");
+            }
+
+            String url = "jdbc:mysql://" + host + ":" + port + "/" + database
                     + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
-            Connection conn = DriverManager.getConnection(url, user, password);
-            return ;
+            System.out.println("Connecting to: " + url);
+
+            return DriverManager.getConnection(url, user, password);
+
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("Database connection failed", e);
+            throw new RuntimeException("❌ Database connection failed", e);
         }
     }
 }
