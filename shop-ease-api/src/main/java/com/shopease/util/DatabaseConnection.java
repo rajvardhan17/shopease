@@ -15,7 +15,7 @@ public final class DatabaseConnection {
         }
     }
 
-    public static Connection getConnection() {
+    public static void getConnection() {
 
         String railwayUrl = System.getenv("MYSQL_URL");
 
@@ -35,6 +35,7 @@ public final class DatabaseConnection {
                     + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
             Connection conn = DriverManager.getConnection(url, user, password);
+            return ;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Database connection failed", e);
