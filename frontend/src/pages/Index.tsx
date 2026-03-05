@@ -9,7 +9,7 @@ const Index = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const BACKEND_URL = "https://shopease-production.up.railway.app";
+  const BACKEND_URL = "https://shopease-production-acc0.up.railway.app";
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/api/products`)
