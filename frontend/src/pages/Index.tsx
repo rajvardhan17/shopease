@@ -19,11 +19,10 @@ const Index = () => {
 
         console.log("API Response:", data);
 
-        // handle both response formats
-        if (Array.isArray(data)) {
-          setProducts(data);
-        } else if (data.products) {
+        if (data?.products && Array.isArray(data.products)) {
           setProducts(data.products);
+        } else if (Array.isArray(data)) {
+          setProducts(data);
         }
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -35,12 +34,14 @@ const Index = () => {
     fetchProducts();
   }, []);
 
-  // Safe category filtering
-  const tshirts = products.filter((p) => p.categoryId === "tshirt");
-  const shoes = products.filter((p) => p.categoryId === "shoe");
-  const shirts = products.filter((p) => p.categoryId === "shirt");
-  const accessories = products.filter((p) => p.categoryId === "accessory");
-  console.log(products);
+  // Filter products by category safely
+  const tshirts = products.filter((p) => p.category?.toLowerCase() === "tshirt");
+  const shoes = products.filter((p) => p.category?.toLowerCase() === "shoe");
+  const shirts = products.filter((p) => p.category?.toLowerCase() === "shirt");
+  const accessories = products.filter((p) => p.category?.toLowerCase() === "accessory");
+
+  console.log("Filtered products:", { tshirts, shoes, shirts, accessories });
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -52,29 +53,37 @@ const Index = () => {
           <div className="text-center py-10">Loading products...</div>
         ) : (
           <>
-            <ProductShowcase
-              title="Featured T-Shirts"
-              products={tshirts}
-              viewAllLink="/men"
-            />
+            {tshirts.length > 0 && (
+              <ProductShowcase
+                title="Featured T-Shirts"
+                products={tshirts}
+                viewAllLink="/men"
+              />
+            )}
 
-            <ProductShowcase
-              title="Premium Shoes"
-              products={shoes}
-              viewAllLink="/shoes"
-            />
+            {shoes.length > 0 && (
+              <ProductShowcase
+                title="Premium Shoes"
+                products={shoes}
+                viewAllLink="/shoes"
+              />
+            )}
 
-            <ProductShowcase
-              title="Essential Shirts"
-              products={shirts}
-              viewAllLink="/men"
-            />
+            {shirts.length > 0 && (
+              <ProductShowcase
+                title="Essential Shirts"
+                products={shirts}
+                viewAllLink="/men"
+              />
+            )}
 
-            <ProductShowcase
-              title="Luxury Accessories"
-              products={accessories}
-              viewAllLink="/accessories"
-            />
+            {accessories.length > 0 && (
+              <ProductShowcase
+                title="Luxury Accessories"
+                products={accessories}
+                viewAllLink="/accessories"
+              />
+            )}
           </>
         )}
       </main>
