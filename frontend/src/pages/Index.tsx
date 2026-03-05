@@ -15,9 +15,7 @@ const Index = () => {
     fetch(`${BACKEND_URL}/api/products`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setProducts(data.products);
-        }
+        setProducts(data);
       })
       .catch((err) => {
         console.error("Error fetching products:", err);
