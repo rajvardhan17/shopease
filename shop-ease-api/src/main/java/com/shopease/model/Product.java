@@ -11,14 +11,14 @@ public class Product implements Serializable {
 
     // ==================== Fields ====================
 
-    private Long id;   // Use Long for AUTO_INCREMENT
+    private String id;   // UUID (VARCHAR(36))
     private String title;
     private String shortDescription;
     private String description;
     private String categoryId;
-    private String status;          // ACTIVE / INACTIVE
+    private String status = "ACTIVE";   // Default status
     private boolean featured;
-    private String metadata;        // JSON string (optional)
+    private String metadata;            // JSON string (optional)
     private BigDecimal price;
     private String imageUrl;
     private Timestamp createdAt;
@@ -44,7 +44,7 @@ public class Product implements Serializable {
         this.imageUrl = imageUrl;
     }
 
-    public Product(Long id, String title, String shortDescription, String description,
+    public Product(String id, String title, String shortDescription, String description,
                    String categoryId, String status, boolean featured,
                    String metadata, BigDecimal price, String imageUrl,
                    Timestamp createdAt, Timestamp updatedAt) {
@@ -65,12 +65,11 @@ public class Product implements Serializable {
 
     // ==================== Getters & Setters ====================
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    // Do NOT set ID manually if DB auto-generates
-    public void setId(Long id) {
+    public void setId(String id) {   // UUID allowed
         this.id = id;
     }
 
@@ -167,13 +166,9 @@ public class Product implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Product)) return false;
-
-        Product other = (Product) o;
-
-        if (this.id == null || other.id == null) return false;
-
-        return this.id.equals(other.id);
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return Objects.equals(id, product.id);
     }
 
     @Override
@@ -186,11 +181,12 @@ public class Product implements Serializable {
     @Override
     public String toString() {
         return "Product{" +
-                "id=" + id +
+                "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", categoryId='" + categoryId + '\'' +
                 ", price=" + price +
                 ", featured=" + featured +
+                ", status='" + status + '\'' +
                 '}';
     }
 }

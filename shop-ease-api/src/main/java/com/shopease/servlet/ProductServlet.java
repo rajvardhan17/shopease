@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 public class ProductServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(ProductServlet.class.getName());
+
     private final ProductDAO productDAO = new ProductDAO();
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -47,6 +48,7 @@ public class ProductServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         setCorsHeaders(req, resp);
+
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
@@ -54,12 +56,12 @@ public class ProductServlet extends HttpServlet {
 
         try {
 
-            String pathInfo = req.getPathInfo(); // /random OR /123
+            String pathInfo = req.getPathInfo(); // /random OR /{id}
             String pageParam = req.getParameter("page");
             String sizeParam = req.getParameter("size");
 
             // ================= 1️⃣ RANDOM PRODUCTS =================
-            if (pathInfo != null && pathInfo.equals("/random")) {
+            if ("/random".equals(pathInfo)) {
 
                 List<Product> randomProducts = productDAO.getRandomProducts(10);
 
@@ -71,23 +73,40 @@ public class ProductServlet extends HttpServlet {
             else if (pathInfo != null && pathInfo.length() > 1) {
 
                 String productId = pathInfo.substring(1);
+
                 Product product = productDAO.getProductById(productId);
 
                 if (product != null) {
+
                     result.put("success", true);
                     result.put("product", product);
+
                 } else {
+
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+
                     result.put("success", false);
                     result.put("message", "Product not found");
                 }
             }
 
-            // ================= 3️⃣ PAGINATION =================
+            // ================= 3️⃣ PAGINATED PRODUCTS =================
             else {
 
-                int page = pageParam != null ? Integer.parseInt(pageParam) : 1;
-                int size = sizeParam != null ? Integer.parseInt(sizeParam) : 10;
+                int page = 1;
+                int size = 10;
+
+                try {
+
+                    if (pageParam != null) {
+                        page = Integer.parseInt(pageParam);
+                    }
+
+                    if (sizeParam != null) {
+                        size = Integer.parseInt(sizeParam);
+                    }
+
+                } catch (NumberFormatException ignored) {}
 
                 List<Product> products = productDAO.getProducts(page, size);
 
@@ -98,10 +117,13 @@ public class ProductServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
+
             LOGGER.log(Level.SEVERE, "Error fetching products", e);
+
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
             result.put("success", false);
-            result.put("message", "Error fetching products");
+            result.put("message", "Internal server error");
         }
 
         mapper.writeValue(resp.getOutputStream(), result);
