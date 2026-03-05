@@ -305,4 +305,82 @@ public class ProductDAO {
 
         return variants;
     }
+    // =====================================================
+// ================= ADD VARIANT =======================
+// =====================================================
+
+    public boolean addVariant(ProductVariant variant) {
+
+        String sql = """
+            INSERT INTO product_variants
+            (variant_id, id, variant_name, size, color,
+             additional_price, stock, image_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """;
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, UUID.randomUUID().toString());
+            stmt.setString(2, variant.getProductId());
+            stmt.setString(3, variant.getVariantName());
+            stmt.setString(4, variant.getSize());
+            stmt.setString(5, variant.getColor());
+            stmt.setBigDecimal(6, variant.getAdditionalPrice());
+            stmt.setInt(7, variant.getStock());
+            stmt.setString(8, variant.getImageUrl());
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+
+            LOGGER.log(Level.SEVERE, "Error adding variant", e);
+            return false;
+        }
+    }
+    public boolean updateVariant(ProductVariant variant) {
+
+        String sql = """
+            UPDATE product_variants
+            SET variant_name=?, size=?, color=?,
+                additional_price=?, stock=?, image_url=?
+            WHERE variant_id=?
+            """;
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, variant.getVariantName());
+            stmt.setString(2, variant.getSize());
+            stmt.setString(3, variant.getColor());
+            stmt.setBigDecimal(4, variant.getAdditionalPrice());
+            stmt.setInt(5, variant.getStock());
+            stmt.setString(6, variant.getImageUrl());
+            stmt.setString(7, variant.getVariantId());
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+
+            LOGGER.log(Level.SEVERE, "Error updating variant", e);
+            return false;
+        }
+    }
+    public boolean deleteVariant(String variantId) {
+
+        String sql = "DELETE FROM product_variants WHERE variant_id=?";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, variantId);
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+
+            LOGGER.log(Level.SEVERE, "Error deleting variant", e);
+            return false;
+        }
+    }
 }
