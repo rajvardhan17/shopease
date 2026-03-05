@@ -26,7 +26,7 @@ public class PaymentServlet extends HttpServlet {
     // ===== CORS helper =====
     private void setCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
         String origin = request.getHeader("Origin");
-        if ("https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app".equals(origin)) {
+        if ("https://shopease-six-navy.vercel.app".equals(origin)) {
             response.setHeader("Access-Control-Allow-Origin", origin);
         }
         response.setHeader("Access-Control-Allow-Credentials", "true");

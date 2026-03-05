@@ -99,7 +99,10 @@ public class SearchServlet extends HttpServlet {
 
     private void setCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
         String origin = request.getHeader("Origin");
-        if (origin != null && (origin.equals("http://localhost:3000") || origin.equals("http://localhost:8081") || origin.equals("https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app"))) {
+        if (origin != null && (origin.equals("http://localhost:3000") ||
+                origin.equals("http://localhost:8081") ||
+                origin.equals("https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app")
+                || origin.equals("https://shopease-six-navy.vercel.app"))) {
             response.setHeader("Access-Control-Allow-Origin", origin);
         }
         response.setHeader("Access-Control-Allow-Credentials", "true");

@@ -14,6 +14,7 @@ public class CorsFilter implements Filter {
     // ✅ Whitelist allowed origins
     private static final Set<String> ALLOWED_ORIGINS = Set.of(
             "https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app",
+            "https://shopease-six-navy.vercel.app",
             "http://localhost:5173"   // for local dev
     );
 

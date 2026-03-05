@@ -20,7 +20,7 @@ public class AdminOrderServlet extends HttpServlet {
 
     // ===== Helper method for CORS headers =====
     private void setCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
-        String[] allowedOrigins = {"http://localhost:3000", "http://localhost:8080","https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app"};
+        String[] allowedOrigins = {"http://localhost:3000", "http://localhost:8080","https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app","https://shopease-six-navy.vercel.app"};
         String origin = request.getHeader("Origin");
 
         if (origin != null) {

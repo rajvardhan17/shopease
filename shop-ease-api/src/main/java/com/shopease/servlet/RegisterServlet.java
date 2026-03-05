@@ -33,6 +33,7 @@ public class RegisterServlet extends HttpServlet {
                 "http://localhost:3000",
                 "http://192.168.56.1:8080",
                 "http://192.168.1.3:8080",
+                "https://shopease-six-navy.vercel.app",
                 "https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app"
         };
 
