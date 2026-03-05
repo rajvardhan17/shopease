@@ -25,7 +25,7 @@ public class ProductDAO {
         p.setTitle(rs.getString("title"));
         p.setShortDescription(rs.getString("short_description"));
         p.setDescription(rs.getString("description"));
-        p.setCategoryId(rs.getString("category_id"));
+        p.setCategory(rs.getString("category"));
         p.setStatus(rs.getString("status"));
         p.setFeatured(rs.getBoolean("featured"));
         p.setMetadata(rs.getString("metadata"));
@@ -202,7 +202,7 @@ public class ProductDAO {
             stmt.setString(2, product.getTitle());
             stmt.setString(3, product.getShortDescription());
             stmt.setString(4, product.getDescription());
-            stmt.setString(5, product.getCategoryId());
+            stmt.setString(5, product.getCategory());
             stmt.setString(6, product.getStatus());
             stmt.setBoolean(7, product.isFeatured());
             stmt.setString(8, product.getMetadata());
@@ -236,7 +236,7 @@ public class ProductDAO {
             stmt.setString(1, product.getTitle());
             stmt.setString(2, product.getShortDescription());
             stmt.setString(3, product.getDescription());
-            stmt.setString(4, product.getCategoryId());
+            stmt.setString(4, product.getCategory());
             stmt.setString(5, product.getStatus());
             stmt.setBoolean(6, product.isFeatured());
             stmt.setString(7, product.getMetadata());

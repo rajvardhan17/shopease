@@ -36,11 +36,11 @@ const Index = () => {
   }, []);
 
   // Safe category filtering
-  const tshirts = products.filter((p) => p.category?.toLowerCase() === "tshirt");
-  const shoes = products.filter((p) => p.category?.toLowerCase() === "shoe");
-  const shirts = products.filter((p) => p.category?.toLowerCase() === "shirt");
-  const accessories = products.filter((p) => p.category?.toLowerCase() === "accessory");
-
+  const tshirts = products.filter((p) => p.categoryId === "tshirt");
+  const shoes = products.filter((p) => p.categoryId === "shoe");
+  const shirts = products.filter((p) => p.categoryId === "shirt");
+  const accessories = products.filter((p) => p.categoryId === "accessory");
+  console.log(products);
   return (
     <div className="min-h-screen bg-background">
       <Header />

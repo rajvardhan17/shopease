@@ -15,7 +15,7 @@ public class Product implements Serializable {
     private String title;
     private String shortDescription;
     private String description;
-    private String categoryId;
+    private String category;
     private String status = "ACTIVE";   // Default status
     private boolean featured;
     private String metadata;            // JSON string (optional)
@@ -36,7 +36,7 @@ public class Product implements Serializable {
         this.title = title;
         this.shortDescription = shortDescription;
         this.description = description;
-        this.categoryId = categoryId;
+        this.category = category;
         this.status = status;
         this.featured = featured;
         this.metadata = metadata;
@@ -45,7 +45,7 @@ public class Product implements Serializable {
     }
 
     public Product(String id, String title, String shortDescription, String description,
-                   String categoryId, String status, boolean featured,
+                   String category, String status, boolean featured,
                    String metadata, BigDecimal price, String imageUrl,
                    Timestamp createdAt, Timestamp updatedAt) {
 
@@ -53,7 +53,7 @@ public class Product implements Serializable {
         this.title = title;
         this.shortDescription = shortDescription;
         this.description = description;
-        this.categoryId = categoryId;
+        this.category = category;
         this.status = status;
         this.featured = featured;
         this.metadata = metadata;
@@ -97,12 +97,12 @@ public class Product implements Serializable {
         this.description = description;
     }
 
-    public String getCategoryId() {
-        return categoryId;
+    public String getCategory() {
+        return category;
     }
 
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
+    public void setCategory(String categoryId) {
+        this.category = category;
     }
 
     public String getStatus() {
@@ -183,7 +183,7 @@ public class Product implements Serializable {
         return "Product{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
-                ", categoryId='" + categoryId + '\'' +
+                ", categoryId='" + category + '\'' +
                 ", price=" + price +
                 ", featured=" + featured +
                 ", status='" + status + '\'' +
