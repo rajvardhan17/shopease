@@ -45,7 +45,7 @@ public class ProductDAO {
         ProductVariant v = new ProductVariant();
 
         v.setVariantId(rs.getString("variant_id"));
-        v.setProductId(rs.getString("product_id"));
+        v.setProductId(rs.getString("id"));
         v.setVariantName(rs.getString("variant_name"));
         v.setSize(rs.getString("size"));
         v.setColor(rs.getString("color"));
@@ -271,7 +271,7 @@ public class ProductDAO {
 
         String sql = """
                 SELECT * FROM product_variants
-                WHERE product_id=?
+                WHERE id=?
                 ORDER BY variant_name
                 """;
 
