@@ -34,12 +34,13 @@ const Index = () => {
     fetchProducts();
   }, []);
 
-  // Filter products by category safely
-  const tshirts = products.filter((p) => p.category?.toLowerCase() === "tshirt");
-  const shoes = products.filter((p) => p.category?.toLowerCase() === "shoe");
-  const shirts = products.filter((p) => p.category?.toLowerCase() === "shirt");
-  const accessories = products.filter((p) => p.category?.toLowerCase() === "accessory");
+  // Filter products by category safely// Filter products by normalized category
+  const normalize = (str) => str?.toLowerCase().replace(/[\s-]/g, "");
 
+  const tshirts = products.filter((p) => normalize(p.category) === "tshirts");
+  const shoes = products.filter((p) => normalize(p.category) === "shoe");
+  const shirts = products.filter((p) => normalize(p.category) === "shirt");
+  const accessories = products.filter((p) => normalize(p.category) === "accessory");
   console.log("Filtered products:", { tshirts, shoes, shirts, accessories });
 
   return (
