@@ -12,22 +12,34 @@ const Index = () => {
   const BACKEND_URL = "https://shopease-production-acc0.up.railway.app";
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/products`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data);
-      })
-      .catch((err) => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/products`);
+        const data = await res.json();
+
+        console.log("API Response:", data);
+
+        // handle both response formats
+        if (Array.isArray(data)) {
+          setProducts(data);
+        } else if (data.products) {
+          setProducts(data.products);
+        }
+      } catch (err) {
         console.error("Error fetching products:", err);
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
-  // Filter by category
-  const tshirts = products.filter((p) => p.category === "tshirt");
-  const shoes = products.filter((p) => p.category === "shoe");
-  const shirts = products.filter((p) => p.category === "shirt");
-  const accessories = products.filter((p) => p.category === "accessory");
+  // Safe category filtering
+  const tshirts = products.filter((p) => p.category?.toLowerCase() === "tshirt");
+  const shoes = products.filter((p) => p.category?.toLowerCase() === "shoe");
+  const shirts = products.filter((p) => p.category?.toLowerCase() === "shirt");
+  const accessories = products.filter((p) => p.category?.toLowerCase() === "accessory");
 
   return (
     <div className="min-h-screen bg-background">
