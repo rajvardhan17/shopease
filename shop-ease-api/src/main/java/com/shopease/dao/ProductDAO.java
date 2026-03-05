@@ -1,6 +1,7 @@
 package com.shopease.dao;
 
 import com.shopease.model.Product;
+import com.shopease.model.ProductVariant;
 import com.shopease.util.DatabaseUtil;
 
 import java.sql.*;
@@ -12,7 +13,9 @@ public class ProductDAO {
 
     private static final Logger LOGGER = Logger.getLogger(ProductDAO.class.getName());
 
-    // ================= PRODUCT MAPPER =================
+    // =====================================================
+    // ================= PRODUCT MAPPER ====================
+    // =====================================================
 
     private Product mapProduct(ResultSet rs) throws SQLException {
 
@@ -35,10 +38,29 @@ public class ProductDAO {
     }
 
     // =====================================================
-    // ================= PUBLIC METHODS ====================
+    // ================= VARIANT MAPPER ====================
     // =====================================================
 
-    // Fetch all ACTIVE products
+    private ProductVariant mapVariant(ResultSet rs) throws SQLException {
+
+        ProductVariant v = new ProductVariant();
+
+        v.setVariantId(rs.getString("variant_id"));
+        v.setProductId(rs.getString("product_id"));
+        v.setVariantName(rs.getString("variant_name"));
+        v.setSize(rs.getString("size"));
+        v.setColor(rs.getString("color"));
+        v.setAdditionalPrice(rs.getBigDecimal("additional_price"));
+        v.setStock(rs.getInt("stock"));
+        v.setImageUrl(rs.getString("image_url"));
+
+        return v;
+    }
+
+    // =====================================================
+    // ================= PRODUCT METHODS ===================
+    // =====================================================
+
     public List<Product> getAllProducts() {
 
         String sql = "SELECT * FROM products WHERE status='ACTIVE' ORDER BY created_at DESC";
@@ -59,7 +81,8 @@ public class ProductDAO {
         return list;
     }
 
-    // Fetch product by ID
+    // -----------------------------------------------------
+
     public Product getProductById(String productId) {
 
         String sql = "SELECT * FROM products WHERE product_id=? AND status='ACTIVE'";
@@ -74,6 +97,7 @@ public class ProductDAO {
                 if (rs.next()) {
                     return mapProduct(rs);
                 }
+
             }
 
         } catch (Exception e) {
@@ -83,7 +107,8 @@ public class ProductDAO {
         return null;
     }
 
-    // Pagination
+    // -----------------------------------------------------
+
     public List<Product> getProducts(int page, int size) {
 
         String sql = """
@@ -108,6 +133,7 @@ public class ProductDAO {
                 while (rs.next()) {
                     list.add(mapProduct(rs));
                 }
+
             }
 
         } catch (Exception e) {
@@ -117,7 +143,8 @@ public class ProductDAO {
         return list;
     }
 
-    // Random products
+    // -----------------------------------------------------
+
     public List<Product> getRandomProducts(int limit) {
 
         String sql = """
@@ -139,6 +166,7 @@ public class ProductDAO {
                 while (rs.next()) {
                     list.add(mapProduct(rs));
                 }
+
             }
 
         } catch (Exception e) {
@@ -149,7 +177,7 @@ public class ProductDAO {
     }
 
     // =====================================================
-    // ================= ADMIN CRUD ========================
+    // ================= ADMIN PRODUCT CRUD =================
     // =====================================================
 
     public boolean addProduct(Product product) {
@@ -184,6 +212,8 @@ public class ProductDAO {
         }
     }
 
+    // -----------------------------------------------------
+
     public boolean updateProduct(Product product) {
 
         String sql = """
@@ -216,6 +246,8 @@ public class ProductDAO {
         }
     }
 
+    // -----------------------------------------------------
+
     public boolean deleteProduct(String productId) {
 
         String sql = "DELETE FROM products WHERE product_id=?";
@@ -229,6 +261,120 @@ public class ProductDAO {
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error deleting product", e);
+            return false;
+        }
+    }
+
+    // =====================================================
+    // ================= VARIANT METHODS ===================
+    // =====================================================
+
+    public List<ProductVariant> getVariantsByProductId(String productId) {
+
+        String sql = """
+                SELECT * FROM product_variants
+                WHERE product_id=?
+                ORDER BY variant_name
+                """;
+
+        List<ProductVariant> variants = new ArrayList<>();
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, productId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                while (rs.next()) {
+                    variants.add(mapVariant(rs));
+                }
+
+            }
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error fetching variants", e);
+        }
+
+        return variants;
+    }
+
+    // -----------------------------------------------------
+
+    public boolean addVariant(ProductVariant variant) {
+
+        String sql = """
+                INSERT INTO product_variants
+                (variant_id, product_id, variant_name, size, color,
+                 additional_price, stock, image_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, UUID.randomUUID().toString());
+            stmt.setString(2, variant.getProductId());
+            stmt.setString(3, variant.getVariantName());
+            stmt.setString(4, variant.getSize());
+            stmt.setString(5, variant.getColor());
+            stmt.setBigDecimal(6, variant.getAdditionalPrice());
+            stmt.setInt(7, variant.getStock());
+            stmt.setString(8, variant.getImageUrl());
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error adding variant", e);
+            return false;
+        }
+    }
+
+    // -----------------------------------------------------
+
+    public boolean updateVariant(ProductVariant variant) {
+
+        String sql = """
+                UPDATE product_variants
+                SET variant_name=?, size=?, color=?,
+                    additional_price=?, stock=?, image_url=?
+                WHERE variant_id=?
+                """;
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, variant.getVariantName());
+            stmt.setString(2, variant.getSize());
+            stmt.setString(3, variant.getColor());
+            stmt.setBigDecimal(4, variant.getAdditionalPrice());
+            stmt.setInt(5, variant.getStock());
+            stmt.setString(6, variant.getImageUrl());
+            stmt.setString(7, variant.getVariantId());
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error updating variant", e);
+            return false;
+        }
+    }
+
+    // -----------------------------------------------------
+
+    public boolean deleteVariant(String variantId) {
+
+        String sql = "DELETE FROM product_variants WHERE variant_id=?";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, variantId);
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error deleting variant", e);
             return false;
         }
     }

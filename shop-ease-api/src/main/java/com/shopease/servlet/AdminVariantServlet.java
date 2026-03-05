@@ -14,16 +14,23 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//@WebServlet("/api/admin/variants/*")
+@WebServlet("/api/admin/variants/*")
 public class AdminVariantServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(AdminVariantServlet.class.getName());
+
     private final ProductDAO productDAO = new ProductDAO();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    // ===== Helper method for CORS headers =====
+    // ================= CORS =================
     private void setCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
-        String[] allowedOrigins = {"http://localhost:3000", "http://localhost:8080","https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app"};
+
+        String[] allowedOrigins = {
+                "http://localhost:3000",
+                "http://localhost:8080",
+                "https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app"
+        };
+
         String origin = request.getHeader("Origin");
 
         if (origin != null) {
@@ -37,30 +44,34 @@ public class AdminVariantServlet extends HttpServlet {
 
         response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         response.setHeader("Vary", "Origin");
     }
 
-    // ===== Handle preflight OPTIONS requests =====
+    // ================= OPTIONS =================
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+
         setCorsHeaders(req, resp);
         resp.setStatus(HttpServletResponse.SC_OK);
     }
 
-    // ===== GET: Fetch variants by product ID =====
+    // ================= GET (Admin Only) =================
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         setCorsHeaders(req, resp);
         resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
 
         try {
+
             User admin = getAdminFromSession(req, resp);
-            if (admin == null) return; // Already responded with UNAUTHORIZED
+            if (admin == null) return;
 
             String productId = extractIdFromPath(req, resp);
-            if (productId == null) return; // Already responded with BAD_REQUEST
+            if (productId == null) return;
 
             mapper.writeValue(resp.getOutputStream(), Map.of(
                     "success", true,
@@ -68,8 +79,11 @@ public class AdminVariantServlet extends HttpServlet {
             ));
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error in GET /variants", e);
+
+            LOGGER.log(Level.SEVERE, "Error fetching variants", e);
+
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
             mapper.writeValue(resp.getOutputStream(), Map.of(
                     "success", false,
                     "message", "Internal server error"
@@ -77,18 +91,24 @@ public class AdminVariantServlet extends HttpServlet {
         }
     }
 
-    // ===== POST: Add new variant =====
+    // ================= POST (Add Variant) =================
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         setCorsHeaders(req, resp);
         resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
 
         try {
+
             User admin = getAdminFromSession(req, resp);
             if (admin == null) return;
 
             ProductVariant variant = mapper.readValue(req.getInputStream(), ProductVariant.class);
+
             boolean success = productDAO.addVariant(variant);
+
+            resp.setStatus(success ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_BAD_REQUEST);
 
             mapper.writeValue(resp.getOutputStream(), Map.of(
                     "success", success,
@@ -96,8 +116,11 @@ public class AdminVariantServlet extends HttpServlet {
             ));
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error in POST /variants", e);
+
+            LOGGER.log(Level.SEVERE, "Error adding variant", e);
+
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
             mapper.writeValue(resp.getOutputStream(), Map.of(
                     "success", false,
                     "message", "Internal server error"
@@ -105,17 +128,21 @@ public class AdminVariantServlet extends HttpServlet {
         }
     }
 
-    // ===== PUT: Update existing variant =====
+    // ================= PUT (Update Variant) =================
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         setCorsHeaders(req, resp);
         resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
 
         try {
+
             User admin = getAdminFromSession(req, resp);
             if (admin == null) return;
 
             ProductVariant variant = mapper.readValue(req.getInputStream(), ProductVariant.class);
+
             boolean success = productDAO.updateVariant(variant);
 
             mapper.writeValue(resp.getOutputStream(), Map.of(
@@ -124,8 +151,11 @@ public class AdminVariantServlet extends HttpServlet {
             ));
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error in PUT /variants", e);
+
+            LOGGER.log(Level.SEVERE, "Error updating variant", e);
+
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
             mapper.writeValue(resp.getOutputStream(), Map.of(
                     "success", false,
                     "message", "Internal server error"
@@ -133,13 +163,16 @@ public class AdminVariantServlet extends HttpServlet {
         }
     }
 
-    // ===== DELETE: Delete variant by ID =====
+    // ================= DELETE =================
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         setCorsHeaders(req, resp);
         resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
 
         try {
+
             User admin = getAdminFromSession(req, resp);
             if (admin == null) return;
 
@@ -154,8 +187,11 @@ public class AdminVariantServlet extends HttpServlet {
             ));
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error in DELETE /variants", e);
+
+            LOGGER.log(Level.SEVERE, "Error deleting variant", e);
+
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
             mapper.writeValue(resp.getOutputStream(), Map.of(
                     "success", false,
                     "message", "Internal server error"
@@ -163,33 +199,45 @@ public class AdminVariantServlet extends HttpServlet {
         }
     }
 
-    // ===== Helper: Extract admin user from session =====
+    // ================= SESSION ADMIN CHECK =================
     private User getAdminFromSession(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         HttpSession session = req.getSession(false);
+
         User admin = (session != null) ? (User) session.getAttribute("user") : null;
 
-        if (admin == null || !"admin".equals(admin.getRole())) {
+        if (admin == null || !"admin".equalsIgnoreCase(admin.getRole())) {
+
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
             mapper.writeValue(resp.getOutputStream(), Map.of(
                     "success", false,
-                    "message", "Admin login required"
+                    "message", "Admin authentication required"
             ));
+
             return null;
         }
+
         return admin;
     }
 
-    // ===== Helper: Extract ID from URL path =====
+    // ================= PATH HELPER =================
     private String extractIdFromPath(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
         String pathInfo = req.getPathInfo();
+
         if (pathInfo == null || pathInfo.length() <= 1) {
+
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
             mapper.writeValue(resp.getOutputStream(), Map.of(
                     "success", false,
                     "message", "ID is required in the URL"
             ));
+
             return null;
         }
+
         return pathInfo.substring(1);
     }
 }
