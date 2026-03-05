@@ -25,7 +25,7 @@ public class ProductDAO {
         p.setTitle(rs.getString("title"));
         p.setShortDescription(rs.getString("short_description"));
         p.setDescription(rs.getString("description"));
-        p.setCategory(rs.getString("category"));
+        p.setCategory(rs.getString("category")); // category name
         p.setStatus(rs.getString("status"));
         p.setFeatured(rs.getBoolean("featured"));
         p.setMetadata(rs.getString("metadata"));
@@ -62,7 +62,13 @@ public class ProductDAO {
 
     public List<Product> getAllProducts() {
 
-        String sql = "SELECT * FROM products WHERE status='active' ORDER BY created_at DESC";
+        String sql = """
+        SELECT p.*, c.name AS category
+        FROM products p
+        JOIN categories c ON p.category_id = c.id
+        WHERE p.status='active'
+        ORDER BY p.created_at DESC
+        """;
 
         List<Product> list = new ArrayList<>();
 
@@ -87,7 +93,12 @@ public class ProductDAO {
 
     public Product getProductById(String id) {
 
-        String sql = "SELECT * FROM products WHERE id=? AND status='active'";
+        String sql = """
+        SELECT p.*, c.name AS category
+        FROM products p
+        JOIN categories c ON p.category_id = c.id
+        WHERE p.id=? AND p.status='active'
+        """;
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -99,7 +110,6 @@ public class ProductDAO {
                 if (rs.next()) {
                     return mapProduct(rs);
                 }
-
             }
 
         } catch (Exception e) {
@@ -110,54 +120,19 @@ public class ProductDAO {
     }
 
     // =====================================================
-    // PAGINATED PRODUCTS
-    // =====================================================
-
-    public List<Product> getProducts(int page, int size) {
-
-        String sql = """
-                SELECT * FROM products
-                WHERE status='active'
-                ORDER BY created_at DESC
-                LIMIT ? OFFSET ?
-                """;
-
-        List<Product> list = new ArrayList<>();
-        int offset = (page - 1) * size;
-
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, size);
-            stmt.setInt(2, offset);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-
-                while (rs.next()) {
-                    list.add(mapProduct(rs));
-                }
-
-            }
-
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error fetching paginated products", e);
-        }
-
-        return list;
-    }
-
-    // =====================================================
     // RANDOM PRODUCTS
     // =====================================================
 
     public List<Product> getRandomProducts(int limit) {
 
         String sql = """
-                SELECT * FROM products
-                WHERE status='active'
-                ORDER BY RAND()
-                LIMIT ?
-                """;
+        SELECT p.*, c.name AS category
+        FROM products p
+        JOIN categories c ON p.category_id = c.id
+        WHERE p.status='active'
+        ORDER BY RAND()
+        LIMIT ?
+        """;
 
         List<Product> list = new ArrayList<>();
 
@@ -171,7 +146,6 @@ public class ProductDAO {
                 while (rs.next()) {
                     list.add(mapProduct(rs));
                 }
-
             }
 
         } catch (Exception e) {
@@ -182,18 +156,18 @@ public class ProductDAO {
     }
 
     // =====================================================
-    // ADMIN - ADD PRODUCT
+    // ADD PRODUCT
     // =====================================================
 
     public boolean addProduct(Product product) {
 
         String sql = """
-                INSERT INTO products
-                (id, title, short_description, description,
-                 category_id, status, featured, metadata,
-                 price, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-                """;
+        INSERT INTO products
+        (id, title, short_description, description,
+         category_id, status, featured, metadata,
+         price, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        """;
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -202,7 +176,7 @@ public class ProductDAO {
             stmt.setString(2, product.getTitle());
             stmt.setString(3, product.getShortDescription());
             stmt.setString(4, product.getDescription());
-            stmt.setString(5, product.getCategory());
+            stmt.setString(5, product.getCategory()); // category_id
             stmt.setString(6, product.getStatus());
             stmt.setBoolean(7, product.isFeatured());
             stmt.setString(8, product.getMetadata());
@@ -212,41 +186,6 @@ public class ProductDAO {
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error adding product", e);
-            return false;
-        }
-    }
-
-    // =====================================================
-    // UPDATE PRODUCT
-    // =====================================================
-
-    public boolean updateProduct(Product product) {
-
-        String sql = """
-                UPDATE products
-                SET title=?, short_description=?, description=?,
-                    category_id=?, status=?, featured=?,
-                    metadata=?, price=?, updated_at=NOW()
-                WHERE id=?
-                """;
-
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, product.getTitle());
-            stmt.setString(2, product.getShortDescription());
-            stmt.setString(3, product.getDescription());
-            stmt.setString(4, product.getCategory());
-            stmt.setString(5, product.getStatus());
-            stmt.setBoolean(6, product.isFeatured());
-            stmt.setString(7, product.getMetadata());
-            stmt.setBigDecimal(8, product.getPrice());
-            stmt.setString(9, product.getId());
-
-            return stmt.executeUpdate() > 0;
-
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error updating product", e);
             return false;
         }
     }
@@ -273,16 +212,16 @@ public class ProductDAO {
     }
 
     // =====================================================
-    // GET VARIANTS BY PRODUCT
+    // GET VARIANTS
     // =====================================================
 
     public List<ProductVariant> getVariantsByProductId(String productId) {
 
         String sql = """
-                SELECT * FROM product_variants
-                WHERE product_id=?
-                ORDER BY variant_name
-                """;
+        SELECT * FROM product_variants
+        WHERE product_id=?
+        ORDER BY variant_name
+        """;
 
         List<ProductVariant> variants = new ArrayList<>();
 
@@ -296,7 +235,6 @@ public class ProductDAO {
                 while (rs.next()) {
                     variants.add(mapVariant(rs));
                 }
-
             }
 
         } catch (Exception e) {
@@ -305,18 +243,19 @@ public class ProductDAO {
 
         return variants;
     }
+
     // =====================================================
-// ================= ADD VARIANT =======================
-// =====================================================
+    // ADD VARIANT
+    // =====================================================
 
     public boolean addVariant(ProductVariant variant) {
 
         String sql = """
-            INSERT INTO product_variants
-            (variant_id, id, variant_name, size, color,
-             additional_price, stock, image_url)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """;
+        INSERT INTO product_variants
+        (variant_id, product_id, variant_name, size, color,
+         additional_price, stock, image_url)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """;
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -333,19 +272,23 @@ public class ProductDAO {
             return stmt.executeUpdate() > 0;
 
         } catch (Exception e) {
-
             LOGGER.log(Level.SEVERE, "Error adding variant", e);
             return false;
         }
     }
+
+    // =====================================================
+    // UPDATE VARIANT
+    // =====================================================
+
     public boolean updateVariant(ProductVariant variant) {
 
         String sql = """
-            UPDATE product_variants
-            SET variant_name=?, size=?, color=?,
-                additional_price=?, stock=?, image_url=?
-            WHERE variant_id=?
-            """;
+        UPDATE product_variants
+        SET variant_name=?, size=?, color=?,
+            additional_price=?, stock=?, image_url=?
+        WHERE variant_id=?
+        """;
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -361,11 +304,15 @@ public class ProductDAO {
             return stmt.executeUpdate() > 0;
 
         } catch (Exception e) {
-
             LOGGER.log(Level.SEVERE, "Error updating variant", e);
             return false;
         }
     }
+
+    // =====================================================
+    // DELETE VARIANT
+    // =====================================================
+
     public boolean deleteVariant(String variantId) {
 
         String sql = "DELETE FROM product_variants WHERE variant_id=?";
@@ -378,7 +325,6 @@ public class ProductDAO {
             return stmt.executeUpdate() > 0;
 
         } catch (Exception e) {
-
             LOGGER.log(Level.SEVERE, "Error deleting variant", e);
             return false;
         }
