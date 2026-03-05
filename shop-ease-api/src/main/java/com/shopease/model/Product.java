@@ -11,14 +11,14 @@ public class Product implements Serializable {
 
     // ==================== Fields ====================
 
-    private String id;   // UUID (VARCHAR(36))
+    private String id;   // UUID
     private String title;
     private String shortDescription;
     private String description;
-    private String category;
-    private String status = "ACTIVE";   // Default status
+    private String category; // maps to category_id in DB
+    private String status = "active";   // match DB enum
     private boolean featured;
-    private String metadata;            // JSON string (optional)
+    private String metadata; // JSON
     private BigDecimal price;
     private String imageUrl;
     private Timestamp createdAt;
@@ -26,11 +26,10 @@ public class Product implements Serializable {
 
     // ==================== Constructors ====================
 
-    public Product() {
-    }
+    public Product() {}
 
     public Product(String title, String shortDescription, String description,
-                   String categoryId, String status, boolean featured,
+                   String category, String status, boolean featured,
                    String metadata, BigDecimal price, String imageUrl) {
 
         this.title = title;
@@ -69,7 +68,7 @@ public class Product implements Serializable {
         return id;
     }
 
-    public void setId(String id) {   // UUID allowed
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -166,7 +165,7 @@ public class Product implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Product)) return false;
         Product product = (Product) o;
         return Objects.equals(id, product.id);
     }
@@ -183,7 +182,7 @@ public class Product implements Serializable {
         return "Product{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
-                ", categoryId='" + category + '\'' +
+                ", category='" + category + '\'' +
                 ", price=" + price +
                 ", featured=" + featured +
                 ", status='" + status + '\'' +
