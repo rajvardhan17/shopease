@@ -14,7 +14,7 @@ public class ProductDAO {
     private static final Logger LOGGER = Logger.getLogger(ProductDAO.class.getName());
 
     // =====================================================
-    // ================= PRODUCT MAPPER ====================
+    // PRODUCT MAPPER
     // =====================================================
 
     private Product mapProduct(ResultSet rs) throws SQLException {
@@ -37,7 +37,7 @@ public class ProductDAO {
     }
 
     // =====================================================
-    // ================= VARIANT MAPPER ====================
+    // VARIANT MAPPER
     // =====================================================
 
     private ProductVariant mapVariant(ResultSet rs) throws SQLException {
@@ -45,7 +45,7 @@ public class ProductDAO {
         ProductVariant v = new ProductVariant();
 
         v.setVariantId(rs.getString("variant_id"));
-        v.setProductId(rs.getString("id"));
+        v.setProductId(rs.getString("product_id"));
         v.setVariantName(rs.getString("variant_name"));
         v.setSize(rs.getString("size"));
         v.setColor(rs.getString("color"));
@@ -57,7 +57,7 @@ public class ProductDAO {
     }
 
     // =====================================================
-    // ================= PRODUCT METHODS ===================
+    // GET ALL PRODUCTS
     // =====================================================
 
     public List<Product> getAllProducts() {
@@ -81,7 +81,9 @@ public class ProductDAO {
         return list;
     }
 
-    // -----------------------------------------------------
+    // =====================================================
+    // GET PRODUCT BY ID
+    // =====================================================
 
     public Product getProductById(String id) {
 
@@ -107,7 +109,9 @@ public class ProductDAO {
         return null;
     }
 
-    // -----------------------------------------------------
+    // =====================================================
+    // PAGINATED PRODUCTS
+    // =====================================================
 
     public List<Product> getProducts(int page, int size) {
 
@@ -119,7 +123,6 @@ public class ProductDAO {
                 """;
 
         List<Product> list = new ArrayList<>();
-
         int offset = (page - 1) * size;
 
         try (Connection conn = DatabaseUtil.getConnection();
@@ -143,7 +146,9 @@ public class ProductDAO {
         return list;
     }
 
-    // -----------------------------------------------------
+    // =====================================================
+    // RANDOM PRODUCTS
+    // =====================================================
 
     public List<Product> getRandomProducts(int limit) {
 
@@ -177,7 +182,7 @@ public class ProductDAO {
     }
 
     // =====================================================
-    // ================= ADMIN PRODUCT CRUD =================
+    // ADMIN - ADD PRODUCT
     // =====================================================
 
     public boolean addProduct(Product product) {
@@ -211,7 +216,9 @@ public class ProductDAO {
         }
     }
 
-    // -----------------------------------------------------
+    // =====================================================
+    // UPDATE PRODUCT
+    // =====================================================
 
     public boolean updateProduct(Product product) {
 
@@ -244,7 +251,9 @@ public class ProductDAO {
         }
     }
 
-    // -----------------------------------------------------
+    // =====================================================
+    // DELETE PRODUCT
+    // =====================================================
 
     public boolean deleteProduct(String id) {
 
@@ -264,14 +273,14 @@ public class ProductDAO {
     }
 
     // =====================================================
-    // ================= VARIANT METHODS ===================
+    // GET VARIANTS BY PRODUCT
     // =====================================================
 
     public List<ProductVariant> getVariantsByProductId(String productId) {
 
         String sql = """
                 SELECT * FROM product_variants
-                WHERE id=?
+                WHERE product_id=?
                 ORDER BY variant_name
                 """;
 
