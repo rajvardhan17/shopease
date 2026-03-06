@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 
 interface Product {
   id: string;
-  name: string;
-  price: number;
+  title: string;
+  shortDescription?: string;
+  price?: number;
   image?: string;
-  category: string;
+  images?: { url: string }[];
+  category?: string;
 }
 
 interface ProductShowcaseProps {
@@ -17,7 +19,11 @@ interface ProductShowcaseProps {
   viewAllLink?: string;
 }
 
-const ProductShowcase = ({ title, products, viewAllLink }: ProductShowcaseProps) => {
+const ProductShowcase = ({
+  title,
+  products,
+  viewAllLink,
+}: ProductShowcaseProps) => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -42,6 +48,8 @@ const ProductShowcase = ({ title, products, viewAllLink }: ProductShowcaseProps)
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Heading */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -52,11 +60,13 @@ const ProductShowcase = ({ title, products, viewAllLink }: ProductShowcaseProps)
           <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground mb-4">
             {title}
           </h2>
+
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Discover our premium collection crafted with precision and style
           </p>
         </motion.div>
 
+        {/* Product Grid */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -64,19 +74,20 @@ const ProductShowcase = ({ title, products, viewAllLink }: ProductShowcaseProps)
           viewport={{ once: true }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12"
         >
-          {products.slice(0, 8).map((product, index) => (
+          {products?.slice(0, 8).map((product) => (
             <motion.div key={product.id} variants={itemVariants}>
               <ProductCard3D product={product} />
             </motion.div>
           ))}
         </motion.div>
 
+        {/* View All Button */}
         {viewAllLink && (
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.5, duration: 0.6 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
             className="text-center"
           >
             <Button
@@ -91,6 +102,7 @@ const ProductShowcase = ({ title, products, viewAllLink }: ProductShowcaseProps)
             </Button>
           </motion.div>
         )}
+
       </div>
     </section>
   );

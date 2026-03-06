@@ -36,10 +36,11 @@ const Product3D = ({ color = "#ffffff" }) => {
 interface ProductCard3DProps {
   product: {
     id: string;
-    name: string;
-    description?: string;
+    title: string;
+    shortDescription?: string;
     price?: number;
     image?: string;
+    images?: { url: string }[];
     category?: string;
   };
   className?: string;
@@ -51,14 +52,29 @@ const ProductCard3D = ({ product, className = "" }: ProductCard3DProps) => {
 
   const openProduct = () => {
     navigate(`/product/${product.id}`);
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    window.scrollTo({ top: 0, behavior: "auto" });
   };
 
   const openProductOptions = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     navigate(`/product/${product.id}`, { state: { scrollToOptions: true } });
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    window.scrollTo({ top: 0, behavior: "auto" });
   };
+
+  const category = product.category?.toLowerCase() || "";
+
+  const getColor = () => {
+    if (category.includes("tshirt") || category.includes("shirt"))
+      return "#DC2626";
+    if (category.includes("shoe")) return "#059669";
+    if (category.includes("accessory")) return "#7C3AED";
+    return "#2563EB";
+  };
+
+  const imageUrl =
+    product.image ||
+    product.images?.[0]?.url ||
+    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab";
 
   return (
     <motion.div
@@ -73,10 +89,10 @@ const ProductCard3D = ({ product, className = "" }: ProductCard3DProps) => {
     >
       {/* Image / 3D Canvas */}
       <div className="aspect-square bg-gradient-card rounded-xl p-4 mb-4 overflow-hidden relative">
-        {product.image ? (
+        {imageUrl ? (
           <img
-            src={product.image}
-            alt={product.name}
+            src={imageUrl}
+            alt={product.title}
             className="w-full h-full object-cover rounded-lg"
           />
         ) : (
@@ -84,15 +100,7 @@ const ProductCard3D = ({ product, className = "" }: ProductCard3DProps) => {
             <ambientLight intensity={0.6} />
             <pointLight position={[10, 10, 10]} intensity={0.8} />
             <pointLight position={[-10, -10, -10]} intensity={0.3} />
-            <Product3D
-              color={
-                product.category?.toLowerCase().includes("shirt")
-                  ? "#DC2626"
-                  : product.category?.toLowerCase().includes("shoe")
-                  ? "#059669"
-                  : "#7C3AED"
-              }
-            />
+            <Product3D color={getColor()} />
           </Canvas>
         )}
       </div>
@@ -103,12 +111,12 @@ const ProductCard3D = ({ product, className = "" }: ProductCard3DProps) => {
           className="font-semibold text-lg mb-1 text-foreground"
           animate={{ color: isHovered ? "#2563eb" : "#000000" }}
         >
-          {product.name}
+          {product.title}
         </motion.h3>
 
-        {product.description && (
+        {product.shortDescription && (
           <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-            {product.description}
+            {product.shortDescription}
           </p>
         )}
 
