@@ -39,7 +39,7 @@ const Index = () => {
     str?.toLowerCase().replace(/[\s-]/g, "");
 
   const tshirts = products.filter(
-    (p) => normalize(p.category) === "t-shirt"
+    (p) => normalize(p.category) === "tshirts"
   );
 
   const shoes = products.filter(
