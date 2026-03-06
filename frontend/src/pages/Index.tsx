@@ -19,7 +19,7 @@ const Index = () => {
 
         console.log("API Response:", data);
 
-        if (data?.products && Array.isArray(data.products)) {
+        if (data?.products) {
           setProducts(data.products);
         } else if (Array.isArray(data)) {
           setProducts(data);
@@ -34,14 +34,27 @@ const Index = () => {
     fetchProducts();
   }, []);
 
-  // Filter products by category safely// Filter products by normalized category
-  const normalize = (str) => str?.toLowerCase().replace(/[\s-]/g, "");
+  // Normalize category names (handles T-Shirts, Accessories, etc.)
+  const normalize = (str) =>
+    str?.toLowerCase().replace(/[\s-]/g, "");
 
-  const tshirts = products.filter((p) => normalize(p.category) === "tshirts");
-  const shoes = products.filter((p) => normalize(p.category) === "shoe");
-  const shirts = products.filter((p) => normalize(p.category) === "shirt");
-  const accessories = products.filter((p) => normalize(p.category) === "accessory");
-  console.log("Filtered products:", { tshirts, shoes, shirts, accessories });
+  const tshirts = products.filter(
+    (p) => normalize(p.category) === "tshirts"
+  );
+
+  const shoes = products.filter(
+    (p) => normalize(p.category) === "shoes"
+  );
+
+  const shirts = products.filter(
+    (p) => normalize(p.category) === "shirts"
+  );
+
+  const accessories = products.filter(
+    (p) => normalize(p.category) === "accessories"
+  );
+
+  console.log("Products:", products);
 
   return (
     <div className="min-h-screen bg-background">
@@ -51,40 +64,34 @@ const Index = () => {
         <CategoryGrid />
 
         {loading ? (
-          <div className="text-center py-10">Loading products...</div>
+          <div className="text-center py-10">
+            Loading products...
+          </div>
         ) : (
           <>
-            {tshirts.length > 0 && (
-              <ProductShowcase
-                title="Featured T-Shirts"
-                products={tshirts}
-                viewAllLink="/men"
-              />
-            )}
+            <ProductShowcase
+              title="Featured T-Shirts"
+              products={tshirts}
+              viewAllLink="/men"
+            />
 
-            {shoes.length > 0 && (
-              <ProductShowcase
-                title="Premium Shoes"
-                products={shoes}
-                viewAllLink="/shoes"
-              />
-            )}
+            <ProductShowcase
+              title="Premium Shoes"
+              products={shoes}
+              viewAllLink="/shoes"
+            />
 
-            {shirts.length > 0 && (
-              <ProductShowcase
-                title="Essential Shirts"
-                products={shirts}
-                viewAllLink="/men"
-              />
-            )}
+            <ProductShowcase
+              title="Essential Shirts"
+              products={shirts}
+              viewAllLink="/men"
+            />
 
-            {accessories.length > 0 && (
-              <ProductShowcase
-                title="Luxury Accessories"
-                products={accessories}
-                viewAllLink="/accessories"
-              />
-            )}
+            <ProductShowcase
+              title="Luxury Accessories"
+              products={accessories}
+              viewAllLink="/accessories"
+            />
           </>
         )}
       </main>
