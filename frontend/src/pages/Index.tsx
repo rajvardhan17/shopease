@@ -14,7 +14,7 @@ const Index = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/products/random`);
+        const res = await fetch(`${BACKEND_URL}/api/products`);
         const data = await res.json();
 
         console.log("API Response:", data);
