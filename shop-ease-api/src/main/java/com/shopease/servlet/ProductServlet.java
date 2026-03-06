@@ -25,9 +25,11 @@ public class ProductServlet extends HttpServlet {
     // ================= CORS =================
     private void setCorsHeaders(HttpServletRequest req, HttpServletResponse resp) {
         String origin = req.getHeader("Origin");
+
         if (origin != null) {
             resp.setHeader("Access-Control-Allow-Origin", origin);
         }
+
         resp.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         resp.setHeader("Access-Control-Allow-Credentials", "true");
@@ -58,20 +60,22 @@ public class ProductServlet extends HttpServlet {
             String sizeParam = req.getParameter("size");
 
             // ================= 1️⃣ RANDOM PRODUCTS =================
-            if ("/random".equals(pathInfo)) {
+            if (pathInfo != null && pathInfo.equals("/random")) {
+
                 List<Product> randomProducts = productDAO.getRandomProducts(10);
+
                 result.put("success", true);
                 result.put("products", randomProducts);
             }
 
             // ================= 2️⃣ SINGLE PRODUCT =================
             else if (pathInfo != null && pathInfo.length() > 1) {
+
                 String productId = pathInfo.substring(1);
 
-                // Use DAO method to fetch all products and filter by ID
                 Product product = productDAO.getAllProducts(1, Integer.MAX_VALUE)
                         .stream()
-                        .filter(p -> p.getId().equals(productId))
+                        .filter(p -> p.getId() != null && p.getId().equals(productId))
                         .findFirst()
                         .orElse(null);
 
@@ -87,15 +91,20 @@ public class ProductServlet extends HttpServlet {
 
             // ================= 3️⃣ PAGINATED PRODUCTS =================
             else {
+
                 int page = 1;
                 int size = 10;
 
                 try {
-                    if (pageParam != null) page = Integer.parseInt(pageParam);
-                    if (sizeParam != null) size = Integer.parseInt(sizeParam);
+                    if (pageParam != null) {
+                        page = Integer.parseInt(pageParam);
+                    }
+
+                    if (sizeParam != null) {
+                        size = Integer.parseInt(sizeParam);
+                    }
                 } catch (NumberFormatException ignored) {}
 
-                // Use your DAO's getAllProducts method
                 List<Product> products = productDAO.getAllProducts(page, size);
 
                 result.put("success", true);
@@ -105,8 +114,11 @@ public class ProductServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
+
             LOGGER.log(Level.SEVERE, "Error fetching products", e);
+
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
             result.put("success", false);
             result.put("message", "Internal server error");
         }

@@ -3,50 +3,52 @@ package com.shopease.model;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Objects;
 
 public class Product implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ==================== Fields ====================
+    // ================= Fields =================
 
-    private String id;   // UUID
+    private String id;                 // UUID
     private String title;
     private String shortDescription;
     private String description;
-    private String category; // maps to category_id in DB
-    private String status = "active";   // match DB enum
+
+    private String category;           // category name (joined from categories table)
+
+    private String status = "active";
     private boolean featured;
-    private String metadata; // JSON
+
+    private String metadata;           // JSON metadata
+
     private BigDecimal price;
     private String imageUrl;
+
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
-    // ==================== Constructors ====================
+    // Optional: variants list
+    private List<ProductVariant> variants;
+
+    // ================= Constructors =================
 
     public Product() {}
 
-    public Product(String title, String shortDescription, String description,
-                   String category, String status, boolean featured,
-                   String metadata, BigDecimal price, String imageUrl) {
-
-        this.title = title;
-        this.shortDescription = shortDescription;
-        this.description = description;
-        this.category = category;
-        this.status = status;
-        this.featured = featured;
-        this.metadata = metadata;
-        this.price = price;
-        this.imageUrl = imageUrl;
-    }
-
-    public Product(String id, String title, String shortDescription, String description,
-                   String category, String status, boolean featured,
-                   String metadata, BigDecimal price, String imageUrl,
-                   Timestamp createdAt, Timestamp updatedAt) {
+    public Product(String id,
+                   String title,
+                   String shortDescription,
+                   String description,
+                   String category,
+                   String status,
+                   boolean featured,
+                   String metadata,
+                   BigDecimal price,
+                   String imageUrl,
+                   Timestamp createdAt,
+                   Timestamp updatedAt) {
 
         this.id = id;
         this.title = title;
@@ -62,7 +64,7 @@ public class Product implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    // ==================== Getters & Setters ====================
+    // ================= Getters & Setters =================
 
     public String getId() {
         return id;
@@ -160,14 +162,22 @@ public class Product implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    // ==================== equals & hashCode ====================
+    public List<ProductVariant> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(List<ProductVariant> variants) {
+        this.variants = variants;
+    }
+
+    // ================= equals & hashCode =================
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Product)) return false;
         Product product = (Product) o;
-        return Objects.equals(id, product.id);
+        return id != null && id.equals(product.id);
     }
 
     @Override
@@ -175,7 +185,7 @@ public class Product implements Serializable {
         return Objects.hash(id);
     }
 
-    // ==================== toString ====================
+    // ================= toString =================
 
     @Override
     public String toString() {
