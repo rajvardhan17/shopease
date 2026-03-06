@@ -9,71 +9,57 @@ public class ProductVariant implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ================= Fields =================
+    // ==================== Fields ====================
 
-    private String variantId;       // UUID
-    private String productId;       // Parent product UUID
-
+    private String variantId;        // UUID
+    private String productId;        // UUID (Parent product)
     private String variantName;
     private String size;
     private String color;
-
-    private BigDecimal additionalPrice = BigDecimal.ZERO;
-
+    private BigDecimal additionalPrice;
     private int stock;
     private String imageUrl;
-
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
-    // ================= Constructors =================
+    // ==================== Constructors ====================
 
     public ProductVariant() {
     }
 
-    // Constructor for creating a new variant
-    public ProductVariant(String productId,
-                          String variantName,
-                          String size,
-                          String color,
-                          BigDecimal additionalPrice,
-                          int stock,
-                          String imageUrl) {
+    // Constructor for creating new variants
+    public ProductVariant(String productId, String variantName, String size,
+                          String color, BigDecimal additionalPrice,
+                          int stock, String imageUrl) {
 
         this.productId = productId;
         this.variantName = variantName;
         this.size = size;
         this.color = color;
-        this.additionalPrice = additionalPrice != null ? additionalPrice : BigDecimal.ZERO;
+        this.additionalPrice = additionalPrice;
         this.stock = stock;
         this.imageUrl = imageUrl;
     }
 
     // Full constructor
-    public ProductVariant(String variantId,
-                          String productId,
-                          String variantName,
-                          String size,
-                          String color,
-                          BigDecimal additionalPrice,
-                          int stock,
-                          String imageUrl,
-                          Timestamp createdAt,
-                          Timestamp updatedAt) {
+    public ProductVariant(String variantId, String productId, String variantName,
+                          String size, String color, BigDecimal additionalPrice,
+                          int stock, String imageUrl,
+                          Timestamp createdAt, Timestamp updatedAt) {
 
         this.variantId = variantId;
         this.productId = productId;
         this.variantName = variantName;
         this.size = size;
         this.color = color;
-        this.additionalPrice = additionalPrice != null ? additionalPrice : BigDecimal.ZERO;
+        this.additionalPrice = additionalPrice;
         this.stock = stock;
         this.imageUrl = imageUrl;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    // ================= Getters & Setters =================
+    // ==================== Getters & Setters ====================
 
     public String getVariantId() {
         return variantId;
@@ -120,7 +106,7 @@ public class ProductVariant implements Serializable {
     }
 
     public void setAdditionalPrice(BigDecimal additionalPrice) {
-        this.additionalPrice = additionalPrice != null ? additionalPrice : BigDecimal.ZERO;
+        this.additionalPrice = additionalPrice;
     }
 
     public int getStock() {
@@ -155,13 +141,7 @@ public class ProductVariant implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    // ================= Utility Methods =================
-
-    public boolean isInStock() {
-        return stock > 0;
-    }
-
-    // ================= equals & hashCode =================
+    // ==================== equals & hashCode ====================
 
     @Override
     public boolean equals(Object o) {
@@ -169,9 +149,13 @@ public class ProductVariant implements Serializable {
         if (this == o) return true;
         if (!(o instanceof ProductVariant)) return false;
 
-        ProductVariant that = (ProductVariant) o;
+        ProductVariant other = (ProductVariant) o;
 
-        return variantId != null && variantId.equals(that.variantId);
+        if (this.variantId == null || other.variantId == null) {
+            return false;
+        }
+
+        return this.variantId.equals(other.variantId);
     }
 
     @Override
@@ -179,7 +163,7 @@ public class ProductVariant implements Serializable {
         return Objects.hash(variantId);
     }
 
-    // ================= toString =================
+    // ==================== toString ====================
 
     @Override
     public String toString() {
