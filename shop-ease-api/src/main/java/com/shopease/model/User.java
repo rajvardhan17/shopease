@@ -9,17 +9,17 @@ public class User implements Serializable {
     private String email;
     private String password;  // matches JSON key
     private String phone;
-    private String role = "user"; // default role
+    private boolean isAdmin = false; // default false
 
     public User() {}
 
-    public User(String userId, String fullName, String email, String password, String phone, String role) {
+    public User(String userId, String fullName, String email, String password, String phone, boolean isAdmin) {
         this.userId = userId;
         this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.phone = phone;
-        this.role = role;
+        this.isAdmin = isAdmin;
     }
 
     // Getters & Setters
@@ -39,6 +39,6 @@ public class User implements Serializable {
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public boolean isAdmin() { return isAdmin; }
+    public void setAdmin(boolean admin) { isAdmin = admin; }
 }
