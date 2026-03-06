@@ -53,9 +53,18 @@ public class ProductVariantServlet extends HttpServlet {
         resp.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private boolean isAdmin(HttpSession session) {
-        return session != null && session.getAttribute("user") != null
-                && "admin".equals(((User) session.getAttribute("user")).getRole());
+    // ===== Helper: check admin from session =====
+    private User getAdmin(HttpSession session, HttpServletResponse resp) throws IOException {
+        User user = (session != null) ? (User) session.getAttribute("user") : null;
+        if (user == null || !user.isAdmin()) {
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            mapper.writeValue(resp.getOutputStream(), Map.of(
+                    "success", false,
+                    "message", "Admins only"
+            ));
+            return null;
+        }
+        return user;
     }
 
     // ===== GET variants by product ID =====
@@ -89,7 +98,7 @@ public class ProductVariantServlet extends HttpServlet {
         mapper.writeValue(resp.getOutputStream(), result);
     }
 
-    // ===== POST: add variant =====
+    // ===== POST: add variant (admin only) =====
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         setCorsHeaders(req, resp);
@@ -99,13 +108,7 @@ public class ProductVariantServlet extends HttpServlet {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = req.getSession(false);
 
-        if (!isAdmin(session)) {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            result.put("success", false);
-            result.put("message", "Admins only");
-            mapper.writeValue(resp.getOutputStream(), result);
-            return;
-        }
+        if (getAdmin(session, resp) == null) return;
 
         try {
             ProductVariant variant = mapper.readValue(req.getInputStream(), ProductVariant.class);
@@ -123,7 +126,7 @@ public class ProductVariantServlet extends HttpServlet {
         mapper.writeValue(resp.getOutputStream(), result);
     }
 
-    // ===== PUT: update variant =====
+    // ===== PUT: update variant (admin only) =====
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         setCorsHeaders(req, resp);
@@ -133,13 +136,7 @@ public class ProductVariantServlet extends HttpServlet {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = req.getSession(false);
 
-        if (!isAdmin(session)) {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            result.put("success", false);
-            result.put("message", "Admins only");
-            mapper.writeValue(resp.getOutputStream(), result);
-            return;
-        }
+        if (getAdmin(session, resp) == null) return;
 
         try {
             ProductVariant variant = mapper.readValue(req.getInputStream(), ProductVariant.class);
@@ -157,7 +154,7 @@ public class ProductVariantServlet extends HttpServlet {
         mapper.writeValue(resp.getOutputStream(), result);
     }
 
-    // ===== DELETE: remove variant =====
+    // ===== DELETE: remove variant (admin only) =====
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         setCorsHeaders(req, resp);
@@ -167,13 +164,7 @@ public class ProductVariantServlet extends HttpServlet {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = req.getSession(false);
 
-        if (!isAdmin(session)) {
-            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            result.put("success", false);
-            result.put("message", "Admins only");
-            mapper.writeValue(resp.getOutputStream(), result);
-            return;
-        }
+        if (getAdmin(session, resp) == null) return;
 
         try {
             String pathInfo = req.getPathInfo(); // expected: /{variantId}

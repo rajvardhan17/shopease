@@ -7,15 +7,11 @@ import com.shopease.util.PasswordUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.*;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //@WebServlet("/api/user/signup")
@@ -27,7 +23,6 @@ public class RegisterServlet extends HttpServlet {
 
     // ===== Helper method for CORS headers =====
     private void setCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
-
         String[] allowedOrigins = {
                 "http://localhost:8080",
                 "http://localhost:3000",
@@ -36,9 +31,7 @@ public class RegisterServlet extends HttpServlet {
                 "https://shopease-six-navy.vercel.app",
                 "https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app"
         };
-
         String origin = request.getHeader("Origin");
-
         if (origin != null) {
             for (String allowedOrigin : allowedOrigins) {
                 if (allowedOrigin.equalsIgnoreCase(origin)) {
@@ -47,20 +40,13 @@ public class RegisterServlet extends HttpServlet {
                 }
             }
         }
-
-        // If no match found → allow nothing (safer)
-        if (response.getHeader("Access-Control-Allow-Origin") == null) {
-            // You can uncomment this for development only:
-            // response.setHeader("Access-Control-Allow-Origin", "*");
-        }
-
         response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Vary", "Origin");
     }
-    // ===== Handle preflight OPTIONS requests =====
+
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -73,8 +59,6 @@ public class RegisterServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-                System.out.println("=== doPost HIT ===");
-System.out.println("Method: " + request.getMethod());
         setCorsHeaders(request, response);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -82,7 +66,7 @@ System.out.println("Method: " + request.getMethod());
         Map<String, Object> jsonResponse = new HashMap<>();
 
         try {
-            // Read JSON input
+            // Parse JSON input
             Map<String, String> requestBody = objectMapper.readValue(request.getInputStream(), Map.class);
             String fullName = requestBody.get("fullName");
             String email = requestBody.get("email");
@@ -136,7 +120,7 @@ System.out.println("Method: " + request.getMethod());
             user.setEmail(email);
             user.setPassword(hashedPassword);
             user.setPhone(phone);
-            user.setRole("user");
+            user.setAdmin(false); // New field, default false
 
             boolean success = userDAO.registerUser(user);
 
@@ -166,4 +150,3 @@ System.out.println("Method: " + request.getMethod());
         objectMapper.writeValue(response.getOutputStream(), jsonResponse);
     }
 }
-
