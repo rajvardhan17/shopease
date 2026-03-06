@@ -21,7 +21,7 @@ public class ProductDAO {
         int offset = (page - 1) * size;
 
         String sql = """
-            SELECT 
+              SELECT 
                 p.id,
                 p.title,
                 p.short_description,
@@ -31,11 +31,14 @@ public class ProductDAO {
                 p.featured,
                 p.metadata,
                 p.price,
+                pi.url AS image_url,
                 p.created_at,
                 p.updated_at
             FROM products p
             LEFT JOIN categories c 
-            ON p.category_id = c.id
+                ON p.category_id = c.id
+            LEFT JOIN product_images pi 
+                ON p.id = pi.product_id AND pi.sort_order = 1
             WHERE p.status = 'active'
             LIMIT ? OFFSET ?
         """;
@@ -98,11 +101,14 @@ public class ProductDAO {
                 p.featured,
                 p.metadata,
                 p.price,
+                pi.url AS image_url,
                 p.created_at,
                 p.updated_at
             FROM products p
             LEFT JOIN categories c 
-            ON p.category_id = c.id
+                ON p.category_id = c.id
+            LEFT JOIN product_images pi 
+                ON p.id = pi.product_id AND pi.sort_order = 1
             WHERE p.status='active'
             ORDER BY RAND()
             LIMIT ?
@@ -139,11 +145,14 @@ public class ProductDAO {
                 p.featured,
                 p.metadata,
                 p.price,
+                pi.url AS image_url,
                 p.created_at,
                 p.updated_at
             FROM products p
             LEFT JOIN categories c 
-            ON p.category_id = c.id
+                ON p.category_id = c.id
+            LEFT JOIN product_images pi 
+                ON p.id = pi.product_id AND pi.sort_order = 1
             WHERE p.status='active' 
             AND p.featured = 1
             LIMIT ?
@@ -177,6 +186,10 @@ public class ProductDAO {
         product.setFeatured(rs.getBoolean("featured"));
         product.setMetadata(rs.getString("metadata"));
         product.setPrice(rs.getBigDecimal("price"));
+
+        // ADD THIS LINE
+        product.setImageUrl(rs.getString("image_url"));
+
         product.setCreatedAt(rs.getTimestamp("created_at"));
         product.setUpdatedAt(rs.getTimestamp("updated_at"));
         return product;
