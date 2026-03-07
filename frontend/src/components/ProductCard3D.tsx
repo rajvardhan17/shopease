@@ -1,8 +1,9 @@
-import { useRef, useState, MouseEvent } from "react";
+import { useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Box } from "@react-three/drei";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import type { MouseEvent } from "react";
 import * as THREE from "three";
 
 // 3D Product Component
@@ -35,15 +36,13 @@ const Product3D = ({ color = "#ffffff" }) => {
 interface ProductCard3DProps {
   product: {
     id: string;
-    name: string; // ✅ use name here
+    title: string;
     shortDescription?: string;
     price?: number;
     image?: string;
     images?: { url: string }[];
     imageUrl?: string;
     category?: string;
-    brand?: string;
-    sizes?: string[];
   };
   className?: string;
 }
@@ -73,9 +72,9 @@ const ProductCard3D = ({ product, className = "" }: ProductCard3DProps) => {
     return "#2563EB";
   };
 
-  // Use product.name and images consistently
+  // ✅ Use API's imageUrl field
   const imageUrl =
-    product.imageUrl || product.image || product.images?.[0]?.url ||
+    product.imageUrl || product.image || product.images?.[0]?.url || 
     "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab";
 
   return (
@@ -94,7 +93,7 @@ const ProductCard3D = ({ product, className = "" }: ProductCard3DProps) => {
         {imageUrl ? (
           <img
             src={imageUrl}
-            alt={product.name || "Unnamed Product"}
+            alt={product.title}
             className="w-full h-full object-cover rounded-lg"
           />
         ) : (
@@ -113,7 +112,7 @@ const ProductCard3D = ({ product, className = "" }: ProductCard3DProps) => {
           className="font-semibold text-lg mb-1 text-foreground"
           animate={{ color: isHovered ? "#2563eb" : "#000000" }}
         >
-          {product.name || "Unnamed Product"} {/* ✅ fixed name */}
+          {product.title}
         </motion.h3>
 
         {product.shortDescription && (

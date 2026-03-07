@@ -11,6 +11,19 @@ import Footer from "@/components/Footer";
 
 const BACKEND_URL = "https://shopease-production-acc0.up.railway.app";
 
+// Map all possible category names to simplified keys
+const CATEGORY_MAP: Record<string, string> = {
+  shoes: "shoes",
+  shoe: "shoes",
+  sneakers: "sneakers",
+  sneaker: "sneakers",
+  sandals: "sandals",
+  slipper: "slippers",
+  slippers: "slippers",
+  boots: "boots",
+  boot: "boots",
+};
+
 const Shoes = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState("all"); // all, sneakers, sandals, slippers, boots
@@ -33,28 +46,21 @@ const Shoes = () => {
     fetchProducts();
   }, []);
 
-  const normalize = (str: string) => str?.toLowerCase().replace(/[\s-]/g, "");
+  // Normalize categories: lowercase and map to simplified keys
+  const normalizeCategory = (cat: string | undefined) => {
+    if (!cat) return "";
+    const key = cat.toLowerCase().replace(/\s/g, "").replace(/-/g, "");
+    return CATEGORY_MAP[key] || "";
+  };
 
-  // Filter products for shoes
+  // Filter shoes based on active tab
   const filteredShoes = products.filter((p) => {
-    const cat = normalize(p.category);
-    switch (activeCategory) {
-      case "all":
-        return ["shoe", "sneaker", "sandals", "slippers", "boots"].includes(cat);
-      case "sneakers":
-        return cat === "sneaker";
-      case "sandals":
-        return cat === "sandal" || cat === "sandals";
-      case "slippers":
-        return cat === "slipper" || cat === "slippers";
-      case "boots":
-        return cat === "boot" || cat === "boots";
-      default:
-        return false;
-    }
+    const cat = normalizeCategory(p.category);
+    if (activeCategory === "all") return ["shoes", "sneakers", "sandals", "slippers", "boots"].includes(cat);
+    return cat === activeCategory;
   });
 
-  // Sort shoes
+  // Sort filtered shoes
   const sortedShoes = [...filteredShoes].sort((a, b) => {
     switch (sortBy) {
       case "price-low":
@@ -74,11 +80,13 @@ const Shoes = () => {
 
       <main className="container mx-auto px-4 py-8 pt-24">
         <div className="max-w-7xl mx-auto">
+          {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-4">Shoes Collection</h1>
             <p className="text-muted-foreground">Discover our complete range of footwear for every occasion</p>
           </div>
 
+          {/* Category Tabs */}
           <Tabs value={activeCategory} onValueChange={setActiveCategory} className="mb-8">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="all">All Shoes</TabsTrigger>
@@ -89,6 +97,7 @@ const Shoes = () => {
             </TabsList>
           </Tabs>
 
+          {/* Filters & View */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <Badge variant="secondary">
               {sortedShoes.length} {sortedShoes.length === 1 ? "item" : "items"}
@@ -127,6 +136,7 @@ const Shoes = () => {
             </div>
           </div>
 
+          {/* Loading / Empty / Grid / List */}
           {loading ? (
             <div className="text-center py-12">Loading shoes...</div>
           ) : sortedShoes.length === 0 ? (
@@ -138,10 +148,10 @@ const Shoes = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {sortedShoes.map((shoe) => (
                 <ProductCard3D
-                  key={shoe.id}
+                  key={shoe.id?.toString() || Math.random().toString()}
                   product={{
-                    id: shoe.id.toString(),
-                    name: shoe.name || "Unnamed Shoe",
+                    id: shoe.id?.toString() || "0",
+                    title: shoe.name || "Unnamed Shoe",
                     price: shoe.price || 0,
                     image: shoe.image || "/default-shoe.jpg",
                     category: "shoe",
@@ -152,7 +162,7 @@ const Shoes = () => {
           ) : (
             <div className="space-y-4">
               {sortedShoes.map((shoe) => (
-                <Card key={shoe.id} className="overflow-hidden">
+                <Card key={shoe.id?.toString() || Math.random().toString()} className="overflow-hidden">
                   <CardContent className="p-0">
                     <div className="flex items-center">
                       <img
