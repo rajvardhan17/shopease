@@ -42,9 +42,9 @@ const Shoes = () => {
     // Map DB categories to tab names
     switch (activeCategory) {
       case "all":
-        return ["shoe", "sneaker", "sandals", "slippers", "boots"].includes(cat);
+        return ["shoes", "sneaker", "sandals", "slippers", "boots"].includes(cat);
       case "sneakers":
-        return cat === "sneaker" || cat === "sneakers";
+        return cat === "shoe" || cat === "shoes";
       case "sandals":
         return cat === "sandal" || cat === "sandals";
       case "slippers":
