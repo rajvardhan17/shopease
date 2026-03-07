@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Filter, Grid, List } from "lucide-react";
+import { Grid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProductCard3D from "@/components/ProductCard3D";
 import Header from "@/components/Header";
@@ -13,7 +13,7 @@ const BACKEND_URL = "https://shopease-production-acc0.up.railway.app";
 
 const Shoes = () => {
   const [products, setProducts] = useState<any[]>([]);
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("all"); // all, sneakers, sandals, slippers, boots
   const [sortBy, setSortBy] = useState("name");
   const [viewMode, setViewMode] = useState("grid");
   const [loading, setLoading] = useState(true);
@@ -35,30 +35,38 @@ const Shoes = () => {
 
   const normalize = (str: string) => str?.toLowerCase().replace(/[\s-]/g, "");
 
-  // Map tabs to category variants
-  const categoryMap: Record<string, string[]> = {
-    sneakers: ["sneaker", "sneakers", "air max", "runner"],
-    sandals: ["sandal", "sandals", "beach sandal"],
-    slippers: ["slipper", "slippers", "cozy", "memory foam"],
-    boots: ["boot", "boots", "hiking", "combat", "work boot"],
-  };
-
+  // Filter products for shoes
   const filteredShoes = products.filter((p) => {
     const cat = normalize(p.category);
-    if (activeCategory === "all") {
-      // Include all footwear categories
-      return Object.values(categoryMap).flat().includes(cat);
-    } else {
-      return categoryMap[activeCategory]?.includes(cat);
+
+    // Map DB categories to tab names
+    switch (activeCategory) {
+      case "all":
+        return ["shoe", "sneaker", "sandals", "slippers", "boots"].includes(cat);
+      case "sneakers":
+        return cat === "sneaker" || cat === "sneakers";
+      case "sandals":
+        return cat === "sandal" || cat === "sandals";
+      case "slippers":
+        return cat === "slipper" || cat === "slippers";
+      case "boots":
+        return cat === "boot" || cat === "boots";
+      default:
+        return false;
     }
   });
 
+  // Sort shoes
   const sortedShoes = [...filteredShoes].sort((a, b) => {
     switch (sortBy) {
-      case "price-low": return a.price - b.price;
-      case "price-high": return b.price - a.price;
-      case "name": return a.name.localeCompare(b.name);
-      default: return 0;
+      case "price-low":
+        return a.price - b.price;
+      case "price-high":
+        return b.price - a.price;
+      case "name":
+        return a.name.localeCompare(b.name);
+      default:
+        return 0;
     }
   });
 
@@ -151,7 +159,11 @@ const Shoes = () => {
                 <Card key={shoe.id} className="overflow-hidden">
                   <CardContent className="p-0">
                     <div className="flex items-center">
-                      <img src={shoe.image || "/default-shoe.jpg"} alt={shoe.name} className="w-32 h-32 object-cover" />
+                      <img
+                        src={shoe.image || "/default-shoe.jpg"}
+                        alt={shoe.name}
+                        className="w-32 h-32 object-cover"
+                      />
                       <div className="flex-1 p-6">
                         <div className="flex justify-between items-start">
                           <div>
