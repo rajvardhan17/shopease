@@ -17,6 +17,7 @@ public class ProductDAO {
 
     // ================= GET ALL PRODUCTS =================
     public List<Product> getAllProducts(int page, int size) {
+        size = 15;
         List<Product> products = new ArrayList<>();
         int offset = (page - 1) * size;
 
