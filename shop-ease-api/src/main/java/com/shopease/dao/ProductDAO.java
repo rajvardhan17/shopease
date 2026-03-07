@@ -31,14 +31,18 @@ public class ProductDAO {
                 p.featured,
                 p.metadata,
                 p.price,
-                pi.url AS image_url,
+                (
+                    SELECT pi.url 
+                    FROM product_images pi 
+                    WHERE pi.product_id = p.id 
+                    ORDER BY pi.sort_order ASC 
+                    LIMIT 1
+                ) AS image_url,
                 p.created_at,
                 p.updated_at
             FROM products p
             LEFT JOIN categories c 
                 ON p.category_id = c.id
-            LEFT JOIN product_images pi 
-                ON p.id = pi.product_id AND pi.sort_order = 1
             WHERE p.status = 'active'
             LIMIT ? OFFSET ?
         """;
@@ -64,10 +68,13 @@ public class ProductDAO {
     public List<ProductVariant> getVariantsByProductId(String productId) {
         List<ProductVariant> variants = new ArrayList<>();
         String sql = "SELECT * FROM product_variants WHERE product_id = ?";
+
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
             stmt.setString(1, productId);
             ResultSet rs = stmt.executeQuery();
+
             while (rs.next()) {
                 ProductVariant variant = new ProductVariant();
                 variant.setVariantId(rs.getString("variant_id"));
@@ -80,9 +87,11 @@ public class ProductDAO {
                 variant.setImageUrl(rs.getString("image_url"));
                 variants.add(variant);
             }
+
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching product variants", e);
         }
+
         return variants;
     }
 
@@ -101,14 +110,18 @@ public class ProductDAO {
                 p.featured,
                 p.metadata,
                 p.price,
-                pi.url AS image_url,
+                (
+                    SELECT pi.url 
+                    FROM product_images pi 
+                    WHERE pi.product_id = p.id 
+                    ORDER BY pi.sort_order ASC 
+                    LIMIT 1
+                ) AS image_url,
                 p.created_at,
                 p.updated_at
             FROM products p
             LEFT JOIN categories c 
                 ON p.category_id = c.id
-            LEFT JOIN product_images pi 
-                ON p.id = pi.product_id AND pi.sort_order = 1
             WHERE p.status='active'
             ORDER BY RAND()
             LIMIT ?
@@ -119,6 +132,7 @@ public class ProductDAO {
 
             stmt.setInt(1, limit);
             ResultSet rs = stmt.executeQuery();
+
             while (rs.next()) {
                 products.add(mapProduct(rs));
             }
@@ -145,14 +159,18 @@ public class ProductDAO {
                 p.featured,
                 p.metadata,
                 p.price,
-                pi.url AS image_url,
+                (
+                    SELECT pi.url 
+                    FROM product_images pi 
+                    WHERE pi.product_id = p.id 
+                    ORDER BY pi.sort_order ASC 
+                    LIMIT 1
+                ) AS image_url,
                 p.created_at,
                 p.updated_at
             FROM products p
             LEFT JOIN categories c 
                 ON p.category_id = c.id
-            LEFT JOIN product_images pi 
-                ON p.id = pi.product_id AND pi.sort_order = 1
             WHERE p.status='active' 
             AND p.featured = 1
             LIMIT ?
@@ -163,6 +181,7 @@ public class ProductDAO {
 
             stmt.setInt(1, limit);
             ResultSet rs = stmt.executeQuery();
+
             while (rs.next()) {
                 products.add(mapProduct(rs));
             }
@@ -177,6 +196,7 @@ public class ProductDAO {
     // ================= MAP RESULTSET =================
     private Product mapProduct(ResultSet rs) throws SQLException {
         Product product = new Product();
+
         product.setId(rs.getString("id"));
         product.setTitle(rs.getString("title"));
         product.setShortDescription(rs.getString("short_description"));
@@ -186,12 +206,10 @@ public class ProductDAO {
         product.setFeatured(rs.getBoolean("featured"));
         product.setMetadata(rs.getString("metadata"));
         product.setPrice(rs.getBigDecimal("price"));
-
-        // ADD THIS LINE
         product.setImageUrl(rs.getString("image_url"));
-
         product.setCreatedAt(rs.getTimestamp("created_at"));
         product.setUpdatedAt(rs.getTimestamp("updated_at"));
+
         return product;
     }
 
