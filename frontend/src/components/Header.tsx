@@ -27,7 +27,7 @@ const Header = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <motion.div whileHover={{ scale: 1.05 }} className="flex-shrink-0">
-            <Link to="/home">
+            <Link to="/">
               <h1 className="text-2xl font-bold tracking-tight text-primary cursor-pointer">
                 ShopEase
               </h1>
