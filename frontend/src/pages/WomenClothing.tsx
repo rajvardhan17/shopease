@@ -1,45 +1,72 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard3D from "@/components/ProductCard3D";
 import { motion } from "framer-motion";
-import dressImage from "@/assets/dress-red.jpg";
-import silkDressImage from "@/assets/dress-silk.jpg";
-import heroTshirtImage from "@/assets/hero-tshirt.jpg";
-import sneakerImage from "@/assets/sneaker-white.jpg";
-import shirtImage from "@/assets/shirt-white.jpg";
 
-const womenProducts = [
-  { id: "w1", name: "Floral Summer Dress", price: 3999, category: "shirt", image: dressImage },
-  { id: "w2", name: "Designer Blouse", price: 2999, category: "shirt", image: shirtImage },
-  { id: "w3", name: "Casual Crop Top", price: 1899, category: "tshirt", image: heroTshirtImage },
-  { id: "w4", name: "Elegant Evening Dress", price: 7999, category: "shirt", image: silkDressImage },
-  { id: "w5", name: "Cotton Basic Tee", price: 1599, category: "tshirt", image: heroTshirtImage },
-  { id: "w6", name: "High Heel Sandals", price: 6999, category: "shoe", image: sneakerImage },
-  { id: "w7", name: "Casual Sneakers", price: 5999, category: "shoe", image: sneakerImage },
-  { id: "w8", name: "Ballet Flats", price: 4999, category: "shoe", image: sneakerImage },
-  { id: "w9", name: "Printed Tank Top", price: 1799, category: "tshirt", image: heroTshirtImage },
-  { id: "w10", name: "Silk Blouse", price: 4999, category: "shirt", image: silkDressImage },
-  { id: "w11", name: "Vintage Style Tee", price: 2199, category: "tshirt", image: heroTshirtImage },
-  { id: "w12", name: "Designer Boots", price: 8999, category: "shoe", image: sneakerImage },
-];
+const BACKEND_URL = "https://shopease-production-acc0.up.railway.app";
 
 const WomenClothing = () => {
+  const [products, setProducts] = useState<any[]>([]);
   const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
 
-  const filteredProducts = filter === "all" 
-    ? womenProducts 
-    : womenProducts.filter(product => product.category === filter);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/products`);
+        const data = await res.json();
+
+        if (data?.products) {
+          setProducts(data.products);
+        } else if (Array.isArray(data)) {
+          setProducts(data);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Normalize string
+  const normalize = (str: string) =>
+    str?.toLowerCase().replace(/[\s-]/g, "");
+
+  // Map button filters to category variants
+  const categoryMap: Record<string, string[]> = {
+    tshirt: ["tshirt", "tshirts", "tee", "tanktop", "croptop"],
+    shirt: ["shirt", "shirts", "blouse", "dress"],
+    shoe: ["shoe", "shoes", "sneaker", "heels", "flats", "boots"],
+    accessories: ["accessory", "accessories", "bag", "belt", "hat"],
+  };
+
+  // Only women products (for this page)
+  const womenProducts = products.filter((p) => {
+    const cat = normalize(p.category);
+    return Object.values(categoryMap).flat().includes(cat);
+  });
+
+  // Apply selected filter
+  const filteredProducts =
+    filter === "all"
+      ? womenProducts
+      : womenProducts.filter((p) =>
+          categoryMap[filter]?.includes(normalize(p.category))
+        );
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="pt-20">
         {/* Hero Section */}
         <section className="relative py-20 bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/20 dark:to-purple-900/20">
           <div className="container mx-auto px-6 text-center">
-            <motion.h1 
+            <motion.h1
               className="text-5xl font-bold mb-6 text-foreground"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -47,7 +74,7 @@ const WomenClothing = () => {
             >
               Women's Collection
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl text-muted-foreground max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -66,7 +93,8 @@ const WomenClothing = () => {
                 { key: "all", label: "All Items" },
                 { key: "tshirt", label: "Tops & Tees" },
                 { key: "shirt", label: "Dresses & Blouses" },
-                { key: "shoe", label: "Shoes" }
+                { key: "shoe", label: "Shoes" },
+                { key: "accessories", label: "Accessories" },
               ].map((filterOption) => (
                 <motion.button
                   key={filterOption.key}
@@ -89,18 +117,28 @@ const WomenClothing = () => {
         {/* Products Grid */}
         <section className="py-16">
           <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                >
-                  <ProductCard3D product={product} />
-                </motion.div>
-              ))}
-            </div>
+            {loading ? (
+              <div className="text-center py-20 text-lg">
+                Loading products...
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="text-center py-20 text-lg">
+                No products found
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {filteredProducts.map((product, index) => (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.05 }}
+                  >
+                    <ProductCard3D product={product} />
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </main>
