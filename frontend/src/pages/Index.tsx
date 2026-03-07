@@ -19,11 +19,8 @@ const Index = () => {
 
         console.log("API Response:", data);
 
-        if (data?.products) {
-          setProducts(data.products);
-        } else if (Array.isArray(data)) {
-          setProducts(data);
-        }
+        if (data?.products) setProducts(data.products);
+        else if (Array.isArray(data)) setProducts(data);
       } catch (err) {
         console.error("Error fetching products:", err);
       } finally {
@@ -34,27 +31,25 @@ const Index = () => {
     fetchProducts();
   }, []);
 
-  // Normalize category names (handles T-Shirts, Accessories, etc.)
-  const normalize = (str) =>
+  // Normalize category names to match multiple variations
+  const normalizeCategory = (str) =>
     str?.toLowerCase().replace(/[\s-]/g, "");
 
-  const tshirts = products.filter(
-    (p) => normalize(p.category) === "tshirts"
+  const tshirts = products.filter((p) =>
+    ["tshirt", "tshirts"].includes(normalizeCategory(p.category))
   );
 
-  const shoes = products.filter(
-    (p) => normalize(p.category) === "shoes"
+  const shoes = products.filter((p) =>
+    ["shoe", "shoes"].includes(normalizeCategory(p.category))
   );
 
-  const shirts = products.filter(
-    (p) => normalize(p.category) === "shirts"
+  const shirts = products.filter((p) =>
+    ["shirt", "shirts"].includes(normalizeCategory(p.category))
   );
 
-  const accessories = products.filter(
-    (p) => normalize(p.category) === "accessories"
+  const accessories = products.filter((p) =>
+    ["accessory", "accessories"].includes(normalizeCategory(p.category))
   );
-
-  console.log("Products:", products);
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,9 +59,7 @@ const Index = () => {
         <CategoryGrid />
 
         {loading ? (
-          <div className="text-center py-10">
-            Loading products...
-          </div>
+          <div className="text-center py-10">Loading products...</div>
         ) : (
           <>
             <ProductShowcase

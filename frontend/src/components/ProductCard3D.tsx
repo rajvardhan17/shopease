@@ -41,6 +41,7 @@ interface ProductCard3DProps {
     price?: number;
     image?: string;
     images?: { url: string }[];
+    imageUrl?: string;
     category?: string;
   };
   className?: string;
@@ -71,9 +72,9 @@ const ProductCard3D = ({ product, className = "" }: ProductCard3DProps) => {
     return "#2563EB";
   };
 
+  // ✅ Use API's imageUrl field
   const imageUrl =
-    product.image ||
-    product.images?.[0]?.url ||
+    product.imageUrl || product.image || product.images?.[0]?.url || 
     "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab";
 
   return (
