@@ -32,7 +32,6 @@ const MenClothing = () => {
     fetchProducts();
   }, []);
 
-  // Normalize string
   const normalize = (str: string) =>
     str?.toLowerCase().replace(/[\s-]/g, "");
 
@@ -41,9 +40,10 @@ const MenClothing = () => {
     tshirt: ["tshirt", "tshirts", "tee", "t-shirt"],
     shirt: ["shirt", "shirts", "formalshirt"],
     shoe: ["shoe", "shoes", "sneaker"],
+    accessories: ["accessory", "accessories", "belt", "hat", "cap", "watch"],
   };
 
-  // Only men products (t-shirts, shirts, shoes)
+  // Only men products relevant for filters
   const menProducts = products.filter((p) => {
     const cat = normalize(p.category);
     return Object.values(categoryMap).flat().includes(cat);
@@ -80,7 +80,7 @@ const MenClothing = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Discover premium quality clothing and footwear designed for the modern man
+              Discover premium quality clothing, footwear, and accessories designed for the modern man
             </motion.p>
           </div>
         </section>
@@ -94,6 +94,7 @@ const MenClothing = () => {
                 { key: "tshirt", label: "T-Shirts" },
                 { key: "shirt", label: "Shirts" },
                 { key: "shoe", label: "Shoes" },
+                { key: "accessories", label: "Accessories" },
               ].map((filterOption) => (
                 <motion.button
                   key={filterOption.key}
