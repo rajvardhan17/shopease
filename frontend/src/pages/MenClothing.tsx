@@ -32,19 +32,30 @@ const MenClothing = () => {
     fetchProducts();
   }, []);
 
+  // Normalize string
   const normalize = (str: string) =>
     str?.toLowerCase().replace(/[\s-]/g, "");
 
-  const menProducts = products.filter((p) =>
-    ["tshirt", "tshirts", "shirt", "shirts", "shoe", "shoes"].includes(
-      normalize(p.category)
-    )
-  );
+  // Map button filters to all possible category variants
+  const categoryMap: Record<string, string[]> = {
+    tshirt: ["tshirt", "tshirts", "tee", "t-shirt"],
+    shirt: ["shirt", "shirts", "formalshirt"],
+    shoe: ["shoe", "shoes", "sneaker"],
+  };
 
+  // Only men products (t-shirts, shirts, shoes)
+  const menProducts = products.filter((p) => {
+    const cat = normalize(p.category);
+    return Object.values(categoryMap).flat().includes(cat);
+  });
+
+  // Apply selected filter
   const filteredProducts =
     filter === "all"
       ? menProducts
-      : menProducts.filter((p) => normalize(p.category) === filter);
+      : menProducts.filter((p) =>
+          categoryMap[filter]?.includes(normalize(p.category))
+        );
 
   return (
     <div className="min-h-screen bg-background">
@@ -105,7 +116,6 @@ const MenClothing = () => {
         {/* Products */}
         <section className="py-16">
           <div className="container mx-auto px-6">
-
             {loading ? (
               <div className="text-center py-20 text-lg">
                 Loading products...
@@ -131,7 +141,6 @@ const MenClothing = () => {
                 ))}
               </div>
             )}
-
           </div>
         </section>
       </main>
