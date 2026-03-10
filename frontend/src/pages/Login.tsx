@@ -52,7 +52,7 @@ const Login = () => {
           title: "Login Successful",
           description: `Welcome back, ${res.user?.fullName || "User"}`,
         });
-        navigate("/home");
+        navigate("/");
       } else {
         toast({
           title: "Login Failed",
