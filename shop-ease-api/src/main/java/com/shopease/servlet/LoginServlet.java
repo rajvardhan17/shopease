@@ -101,8 +101,16 @@ public class LoginServlet extends HttpServlet {
             // Successful login
             HttpSession session = request.getSession(true);
             session.setMaxInactiveInterval(30 * 60);
+
             user.setPassword(null);
             session.setAttribute("user", user);
+
+// IMPORTANT for cross-site cookies (Vercel → Railway)
+            String sessionId = session.getId();
+            response.setHeader(
+                    "Set-Cookie",
+                    "JSESSIONID=" + sessionId + "; Path=/; HttpOnly; Secure; SameSite=None"
+            );
 
             jsonResponse.put("success", true);
             jsonResponse.put("message", "Login successful");
