@@ -35,7 +35,7 @@ const Login = () => {
       try {
         const res = await getSession();
         if (res.success && res.user) {
-          navigate("/dashboard");
+          navigate("/admin");
         }
       } catch (err) {
         // session not found - continue
