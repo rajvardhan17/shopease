@@ -223,12 +223,10 @@ const Profile = () => {
         <TabsContent value="addresses">
 
           <div className="flex justify-end mb-4">
-
             <Button onClick={addAddress}>
               <Plus className="mr-2 h-4 w-4" />
               Add Address
             </Button>
-
           </div>
 
           {addresses.map((addr) => (
@@ -293,13 +291,31 @@ const Profile = () => {
                   }
                 />
 
-                <Button
-                  variant="destructive"
-                  onClick={() => deleteAddress(addr.id)}
-                >
-                  <Trash className="mr-2 h-4 w-4" />
-                  Delete
-                </Button>
+                {/* ACTION BUTTONS */}
+
+                <div className="flex gap-3">
+
+                  <Button
+                    onClick={() =>
+                      toast({
+                        title: "Address Saved",
+                        description: "Your address has been stored locally."
+                      })
+                    }
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Address
+                  </Button>
+
+                  <Button
+                    variant="destructive"
+                    onClick={() => deleteAddress(addr.id)}
+                  >
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
+
+                </div>
 
               </CardContent>
 
@@ -314,6 +330,7 @@ const Profile = () => {
           )}
 
         </TabsContent>
+
 
         {/* SETTINGS TAB */}
 
