@@ -1,27 +1,25 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, LogOut, Save } from "lucide-react";
+import { ArrowLeft, Save, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const BACKEND_URL = "https://shopease-production-acc0.up.railway.app";
 
 const Profile = () => {
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const [profile, setProfile] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [addresses, setAddresses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchProfile();
@@ -29,59 +27,62 @@ const Profile = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/session`, {
-        method: "GET",
-        credentials: "include", // IMPORTANT
-      });
 
-      if (res.status === 401) {
-        navigate("/login");
-        return;
-      }
+      const res = await fetch(`${BACKEND_URL}/api/session`, {
+        credentials: "include"
+      });
 
       const data = await res.json();
 
-      setProfile(data.user || {});
-      setOrders(data.orders || []);
-      setAddresses(data.addresses || []);
-    } catch (error) {
-      console.error("Profile fetch error:", error);
+      if (data.success) {
+        setProfile(data.user);
+      } else {
+        navigate("/login");
+      }
+
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSaveProfile = async () => {
+
     try {
-      await fetch(`${BACKEND_URL}/api/session`, {
+
+      const res = await fetch(`${BACKEND_URL}/api/session`, {
         method: "PUT",
         credentials: "include",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(profile),
+        body: JSON.stringify(profile)
       });
 
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been updated successfully",
-      });
+      const data = await res.json();
 
-      setIsEditing(false);
-    } catch (error) {
-      console.error(error);
+      if (data.success) {
+
+        toast({
+          title: "Profile Updated",
+          description: "Your profile has been updated successfully."
+        });
+
+        setIsEditing(false);
+
+      }
+
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleLogout = async () => {
-    await fetch(`${BACKEND_URL}/api/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+  const handleLogout = () => {
 
     toast({
       title: "Logged Out",
-      description: "You have been logged out",
+      description: "You have been logged out."
     });
 
     navigate("/login");
@@ -89,7 +90,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex justify-center items-center h-screen">
         Loading profile...
       </div>
     );
@@ -97,204 +98,173 @@ const Profile = () => {
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex justify-center items-center h-screen">
         Failed to load profile
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/5">
+    <div className="container mx-auto px-4 py-10">
 
-      {/* Header */}
-      <div className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/home")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+      {/* HEADER */}
+      <div className="flex items-center gap-4 mb-8">
 
-          <div>
-            <h1 className="text-2xl font-bold">My Profile</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage your account settings
-            </p>
-          </div>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/home")}>
+          <ArrowLeft />
+        </Button>
+
+        <div>
+          <h1 className="text-2xl font-bold">My Profile</h1>
+          <p className="text-muted-foreground text-sm">
+            Manage your account
+          </p>
         </div>
+
       </div>
 
-      <div className="container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <Tabs defaultValue="info">
 
-        {/* Sidebar */}
-        <Card className="lg:col-span-1">
-          <CardContent className="p-6 text-center space-y-4">
+        <TabsList className="grid grid-cols-3 w-full mb-6">
+          <TabsTrigger value="info">Info</TabsTrigger>
+          <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
 
-            <Avatar className="h-24 w-24 mx-auto">
-              <AvatarImage src={profile.avatar} />
-              <AvatarFallback className="text-2xl">
-                {profile.firstName?.[0]}{profile.lastName?.[0]}
-              </AvatarFallback>
-            </Avatar>
+        {/* INFO TAB */}
+        <TabsContent value="info">
 
-            <div>
-              <h3 className="font-semibold text-lg">
-                {profile.firstName} {profile.lastName}
-              </h3>
-              <p className="text-sm text-muted-foreground">{profile.email}</p>
-            </div>
+          <Card>
 
-            <Separator />
+            <CardHeader className="flex flex-row justify-between items-center">
 
-            <div className="flex justify-between text-sm">
-              <span>Total Orders</span>
-              <span className="font-semibold">{orders.length}</span>
-            </div>
+              <div>
+                <CardTitle>Personal Information</CardTitle>
+                <CardDescription>
+                  Update your details
+                </CardDescription>
+              </div>
 
-          </CardContent>
-        </Card>
+              {!isEditing ? (
+                <Button onClick={() => setIsEditing(true)}>
+                  Edit
+                </Button>
+              ) : (
+                <Button onClick={handleSaveProfile}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save
+                </Button>
+              )}
 
-        {/* Main Content */}
-        <div className="lg:col-span-3">
+            </CardHeader>
 
-          <Tabs defaultValue="info">
+            <CardContent className="space-y-4">
 
-            <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="info">Info</TabsTrigger>
-              <TabsTrigger value="orders">Orders</TabsTrigger>
-              <TabsTrigger value="addresses">Addresses</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            </TabsList>
+              <Input
+                placeholder="Full Name"
+                value={profile.fullName || ""}
+                disabled={!isEditing}
+                onChange={(e) =>
+                  setProfile({ ...profile, fullName: e.target.value })
+                }
+              />
 
-            {/* Personal Info */}
-            <TabsContent value="info">
-              <Card>
-                <CardHeader className="flex flex-row justify-between items-center">
-                  <div>
-                    <CardTitle>Personal Information</CardTitle>
-                    <CardDescription>
-                      Update your personal details
-                    </CardDescription>
+              <Input
+                placeholder="Email"
+                value={profile.email || ""}
+                disabled={!isEditing}
+                onChange={(e) =>
+                  setProfile({ ...profile, email: e.target.value })
+                }
+              />
+
+              <Input
+                placeholder="Phone"
+                value={profile.phone || ""}
+                disabled={!isEditing}
+                onChange={(e) =>
+                  setProfile({ ...profile, phone: e.target.value })
+                }
+              />
+
+            </CardContent>
+
+          </Card>
+
+        </TabsContent>
+
+        {/* ORDERS */}
+        <TabsContent value="orders">
+
+          <Card>
+
+            <CardHeader>
+              <CardTitle>Your Orders</CardTitle>
+            </CardHeader>
+
+            <CardContent>
+
+              {orders.length === 0 ? (
+                <p>No orders found</p>
+              ) : (
+                orders.map((order) => (
+
+                  <div
+                    key={order.id}
+                    className="border p-4 rounded-lg flex justify-between mb-3"
+                  >
+
+                    <div>
+                      <p className="font-semibold">{order.id}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(order.date).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="font-bold">₹{order.total}</p>
+                      <Badge>{order.status}</Badge>
+                    </div>
+
                   </div>
 
-                  {!isEditing ? (
-                    <Button onClick={() => setIsEditing(true)}>Edit</Button>
-                  ) : (
-                    <Button onClick={handleSaveProfile}>
-                      <Save className="h-4 w-4 mr-2"/>
-                      Save
-                    </Button>
-                  )}
-                </CardHeader>
+                ))
+              )}
 
-                <CardContent className="space-y-4">
+            </CardContent>
 
-                  <Input
-                    value={profile.firstName || ""}
-                    disabled={!isEditing}
-                    onChange={(e) =>
-                      setProfile({ ...profile, firstName: e.target.value })
-                    }
-                  />
+          </Card>
 
-                  <Input
-                    value={profile.lastName || ""}
-                    disabled={!isEditing}
-                    onChange={(e) =>
-                      setProfile({ ...profile, lastName: e.target.value })
-                    }
-                  />
+        </TabsContent>
 
-                  <Input
-                    value={profile.email || ""}
-                    disabled={!isEditing}
-                    onChange={(e) =>
-                      setProfile({ ...profile, email: e.target.value })
-                    }
-                  />
+        {/* SETTINGS */}
+        <TabsContent value="settings">
 
-                </CardContent>
-              </Card>
-            </TabsContent>
+          <Card>
 
-            {/* Orders */}
-            <TabsContent value="orders">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Orders</CardTitle>
-                </CardHeader>
+            <CardHeader>
+              <CardTitle>Account</CardTitle>
+            </CardHeader>
 
-                <CardContent className="space-y-3">
+            <CardContent>
 
-                  {orders.length === 0 && <p>No orders found</p>}
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
 
-                  {orders.map((order) => (
-                    <div key={order.id} className="border p-4 rounded-lg flex justify-between">
+            </CardContent>
 
-                      <div>
-                        <p className="font-semibold">{order.id}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(order.date).toLocaleDateString()}
-                        </p>
-                      </div>
+          </Card>
 
-                      <div className="text-right">
-                        <p className="font-bold">₹{order.total}</p>
-                        <Badge>{order.status}</Badge>
-                      </div>
+        </TabsContent>
 
-                    </div>
-                  ))}
+      </Tabs>
 
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Addresses */}
-            <TabsContent value="addresses">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Saved Addresses</CardTitle>
-                </CardHeader>
-
-                <CardContent className="space-y-3">
-
-                  {addresses.length === 0 && <p>No addresses saved</p>}
-
-                  {addresses.map((addr) => (
-                    <div key={addr.id} className="border p-4 rounded-lg">
-                      <p className="font-semibold">{addr.name}</p>
-                      <p>{addr.street}</p>
-                      <p>{addr.city} {addr.state}</p>
-                    </div>
-                  ))}
-
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Settings */}
-            <TabsContent value="settings">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Account</CardTitle>
-                </CardHeader>
-
-                <CardContent>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="h-4 w-4 mr-2"/>
-                    Logout
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-          </Tabs>
-
-        </div>
-      </div>
     </div>
   );
 };
