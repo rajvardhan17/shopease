@@ -16,8 +16,10 @@ const Profile = () => {
   const { toast } = useToast();
 
   const [profile, setProfile] = useState<any>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [orders, setOrders] = useState<any[]>([]);
-  const [addresses, setAddresses] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -26,11 +28,17 @@ const Profile = () => {
   }, []);
 
   const fetchProfile = async () => {
+
     try {
 
       const res = await fetch(`${BACKEND_URL}/api/session`, {
         credentials: "include"
       });
+
+      if (!res.ok) {
+        navigate("/login");
+        return;
+      }
 
       const data = await res.json();
 
@@ -40,8 +48,8 @@ const Profile = () => {
         navigate("/login");
       }
 
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -49,7 +57,21 @@ const Profile = () => {
 
   const handleSaveProfile = async () => {
 
+    if (newPassword && newPassword !== confirmPassword) {
+      toast({
+        title: "Password mismatch",
+        description: "New password and confirm password must match",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
+
+      const payload = {
+        ...profile,
+        password: newPassword ? newPassword : undefined
+      };
 
       const res = await fetch(`${BACKEND_URL}/api/session`, {
         method: "PUT",
@@ -57,35 +79,48 @@ const Profile = () => {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(profile)
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
 
       if (data.success) {
 
+        setProfile(data.user);
+        setIsEditing(false);
+        setNewPassword("");
+        setConfirmPassword("");
+
         toast({
           title: "Profile Updated",
-          description: "Your profile has been updated successfully."
+          description: "Your details were updated successfully"
         });
-
-        setIsEditing(false);
 
       }
 
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
 
-    toast({
-      title: "Logged Out",
-      description: "You have been logged out."
-    });
+    try {
 
-    navigate("/login");
+      await fetch(`${BACKEND_URL}/api/logout`, {
+        method: "POST",
+        credentials: "include"
+      });
+
+      toast({
+        title: "Logged Out"
+      });
+
+      navigate("/login");
+
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   if (loading) {
@@ -105,19 +140,25 @@ const Profile = () => {
   }
 
   return (
+
     <div className="container mx-auto px-4 py-10">
 
-      {/* HEADER */}
+      {/* Header */}
+
       <div className="flex items-center gap-4 mb-8">
 
-        <Button variant="ghost" size="icon" onClick={() => navigate("/home")}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/home")}
+        >
           <ArrowLeft />
         </Button>
 
         <div>
           <h1 className="text-2xl font-bold">My Profile</h1>
-          <p className="text-muted-foreground text-sm">
-            Manage your account
+          <p className="text-sm text-muted-foreground">
+            Manage your account details
           </p>
         </div>
 
@@ -126,12 +167,13 @@ const Profile = () => {
       <Tabs defaultValue="info">
 
         <TabsList className="grid grid-cols-3 w-full mb-6">
-          <TabsTrigger value="info">Info</TabsTrigger>
+          <TabsTrigger value="info">Profile</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
-        {/* INFO TAB */}
+        {/* PROFILE TAB */}
+
         <TabsContent value="info">
 
           <Card>
@@ -141,7 +183,7 @@ const Profile = () => {
               <div>
                 <CardTitle>Personal Information</CardTitle>
                 <CardDescription>
-                  Update your details
+                  Update your account details
                 </CardDescription>
               </div>
 
@@ -161,11 +203,20 @@ const Profile = () => {
             <CardContent className="space-y-4">
 
               <Input
+                value={profile.userId}
+                disabled
+                placeholder="User ID"
+              />
+
+              <Input
                 placeholder="Full Name"
                 value={profile.fullName || ""}
                 disabled={!isEditing}
                 onChange={(e) =>
-                  setProfile({ ...profile, fullName: e.target.value })
+                  setProfile({
+                    ...profile,
+                    fullName: e.target.value
+                  })
                 }
               />
 
@@ -174,7 +225,10 @@ const Profile = () => {
                 value={profile.email || ""}
                 disabled={!isEditing}
                 onChange={(e) =>
-                  setProfile({ ...profile, email: e.target.value })
+                  setProfile({
+                    ...profile,
+                    email: e.target.value
+                  })
                 }
               />
 
@@ -183,9 +237,47 @@ const Profile = () => {
                 value={profile.phone || ""}
                 disabled={!isEditing}
                 onChange={(e) =>
-                  setProfile({ ...profile, phone: e.target.value })
+                  setProfile({
+                    ...profile,
+                    phone: e.target.value
+                  })
                 }
               />
+
+              <div className="flex items-center gap-2">
+                <span>Account Type:</span>
+                <Badge>
+                  {profile.admin ? "Admin" : "User"}
+                </Badge>
+              </div>
+
+              {/* PASSWORD CHANGE */}
+
+              {isEditing && (
+
+                <>
+
+                  <Input
+                    type="password"
+                    placeholder="New Password"
+                    value={newPassword}
+                    onChange={(e) =>
+                      setNewPassword(e.target.value)
+                    }
+                  />
+
+                  <Input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) =>
+                      setConfirmPassword(e.target.value)
+                    }
+                  />
+
+                </>
+
+              )}
 
             </CardContent>
 
@@ -193,7 +285,8 @@ const Profile = () => {
 
         </TabsContent>
 
-        {/* ORDERS */}
+        {/* ORDERS TAB */}
+
         <TabsContent value="orders">
 
           <Card>
@@ -237,7 +330,8 @@ const Profile = () => {
 
         </TabsContent>
 
-        {/* SETTINGS */}
+        {/* SETTINGS TAB */}
+
         <TabsContent value="settings">
 
           <Card>
