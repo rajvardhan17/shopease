@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { ArrowLeft, Save, LogOut, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,16 +17,16 @@ const Profile = () => {
 
   const [profile, setProfile] = useState<any>(null);
   const [addresses, setAddresses] = useState<any[]>([]);
-  const [editingAddress, setEditingAddress] = useState<any>(null);
-
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  // =====================
+  // FETCH PROFILE (GET)
+  // =====================
 
   const fetchProfile = async () => {
+
+    setLoading(true);
 
     try {
 
@@ -36,20 +37,37 @@ const Profile = () => {
       const data = await res.json();
 
       if (data.success) {
+
         setProfile(data.user);
+
+        toast({
+          title: "Profile Loaded"
+        });
+
       } else {
+
         navigate("/login");
+
       }
 
     } catch (err) {
+
       console.error(err);
+
+      toast({
+        title: "Failed to load profile",
+        variant: "destructive"
+      });
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
   // =====================
-  // PROFILE UPDATE
+  // PROFILE UPDATE (PUT)
   // =====================
 
   const saveProfile = async () => {
@@ -74,10 +92,13 @@ const Profile = () => {
         });
 
         setIsEditingProfile(false);
+
       }
 
     } catch (err) {
+
       console.error(err);
+
     }
   };
 
@@ -99,7 +120,6 @@ const Profile = () => {
     };
 
     setAddresses([...addresses, newAddress]);
-    setEditingAddress(newAddress.id);
   };
 
   const updateAddress = (id: number, field: string, value: string) => {
@@ -134,10 +154,6 @@ const Profile = () => {
     navigate("/login");
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
-  }
-
   return (
 
     <div className="container mx-auto px-4 py-10">
@@ -146,219 +162,237 @@ const Profile = () => {
 
       <div className="flex items-center gap-4 mb-8">
 
-        <Button variant="ghost" onClick={() => navigate("/home")}>
+        <Button variant="ghost" onClick={() => navigate("/")}>
           <ArrowLeft />
         </Button>
 
         <h1 className="text-2xl font-bold">My Profile</h1>
 
+        <Button onClick={fetchProfile}>
+          Load Profile
+        </Button>
+
       </div>
 
-      <Tabs defaultValue="profile">
+      {/* LOADING */}
 
-        <TabsList className="grid grid-cols-3 w-full mb-6">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="addresses">Addresses</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-        </TabsList>
+      {loading && (
+        <div className="text-center mb-6">
+          Loading profile...
+        </div>
+      )}
 
-        {/* PROFILE TAB */}
+      {/* SHOW TABS ONLY AFTER PROFILE LOAD */}
 
-        <TabsContent value="profile">
+      {profile && (
 
-          <Card>
+        <Tabs defaultValue="profile">
 
-            <CardHeader className="flex justify-between items-center">
+          <TabsList className="grid grid-cols-3 w-full mb-6">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="addresses">Addresses</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
 
-              <CardTitle>Personal Information</CardTitle>
+          {/* PROFILE TAB */}
 
-              {!isEditingProfile ? (
-                <Button onClick={() => setIsEditingProfile(true)}>Edit</Button>
-              ) : (
-                <Button onClick={saveProfile}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save
-                </Button>
-              )}
+          <TabsContent value="profile">
 
-            </CardHeader>
+            <Card>
 
-            <CardContent className="space-y-4">
+              <CardHeader className="flex justify-between items-center">
 
-              <Input
-                value={profile.fullName || ""}
-                disabled={!isEditingProfile}
-                placeholder="Full Name"
-                onChange={(e) =>
-                  setProfile({ ...profile, fullName: e.target.value })
-                }
-              />
+                <CardTitle>Personal Information</CardTitle>
 
-              <Input
-                value={profile.email || ""}
-                disabled={!isEditingProfile}
-                placeholder="Email"
-                onChange={(e) =>
-                  setProfile({ ...profile, email: e.target.value })
-                }
-              />
-
-              <Input
-                value={profile.phone || ""}
-                disabled={!isEditingProfile}
-                placeholder="Phone"
-                onChange={(e) =>
-                  setProfile({ ...profile, phone: e.target.value })
-                }
-              />
-
-            </CardContent>
-
-          </Card>
-
-        </TabsContent>
-
-        {/* ADDRESS TAB */}
-
-        <TabsContent value="addresses">
-
-          <div className="flex justify-end mb-4">
-            <Button onClick={addAddress}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Address
-            </Button>
-          </div>
-
-          {addresses.map((addr) => (
-
-            <Card key={addr.id} className="mb-4">
-
-              <CardContent className="space-y-3 pt-6">
-
-                <Input
-                  placeholder="Full Name"
-                  value={addr.fullName}
-                  onChange={(e) =>
-                    updateAddress(addr.id, "fullName", e.target.value)
-                  }
-                />
-
-                <Input
-                  placeholder="Phone"
-                  value={addr.phone}
-                  onChange={(e) =>
-                    updateAddress(addr.id, "phone", e.target.value)
-                  }
-                />
-
-                <Input
-                  placeholder="Street Address"
-                  value={addr.street}
-                  onChange={(e) =>
-                    updateAddress(addr.id, "street", e.target.value)
-                  }
-                />
-
-                <Input
-                  placeholder="City"
-                  value={addr.city}
-                  onChange={(e) =>
-                    updateAddress(addr.id, "city", e.target.value)
-                  }
-                />
-
-                <Input
-                  placeholder="State"
-                  value={addr.state}
-                  onChange={(e) =>
-                    updateAddress(addr.id, "state", e.target.value)
-                  }
-                />
-
-                <Input
-                  placeholder="Postal Code"
-                  value={addr.postalCode}
-                  onChange={(e) =>
-                    updateAddress(addr.id, "postalCode", e.target.value)
-                  }
-                />
-
-                <Input
-                  placeholder="Country"
-                  value={addr.country}
-                  onChange={(e) =>
-                    updateAddress(addr.id, "country", e.target.value)
-                  }
-                />
-
-                {/* ACTION BUTTONS */}
-
-                <div className="flex gap-3">
-
-                  <Button
-                    onClick={() =>
-                      toast({
-                        title: "Address Saved",
-                        description: "Your address has been stored locally."
-                      })
-                    }
-                  >
+                {!isEditingProfile ? (
+                  <Button onClick={() => setIsEditingProfile(true)}>
+                    Edit
+                  </Button>
+                ) : (
+                  <Button onClick={saveProfile}>
                     <Save className="mr-2 h-4 w-4" />
-                    Save Address
+                    Save
                   </Button>
+                )}
 
-                  <Button
-                    variant="destructive"
-                    onClick={() => deleteAddress(addr.id)}
-                  >
-                    <Trash className="mr-2 h-4 w-4" />
-                    Delete
-                  </Button>
+              </CardHeader>
 
-                </div>
+              <CardContent className="space-y-4">
+
+                <Input
+                  value={profile.fullName || ""}
+                  disabled={!isEditingProfile}
+                  placeholder="Full Name"
+                  onChange={(e) =>
+                    setProfile({ ...profile, fullName: e.target.value })
+                  }
+                />
+
+                <Input
+                  value={profile.email || ""}
+                  disabled={!isEditingProfile}
+                  placeholder="Email"
+                  onChange={(e) =>
+                    setProfile({ ...profile, email: e.target.value })
+                  }
+                />
+
+                <Input
+                  value={profile.phone || ""}
+                  disabled={!isEditingProfile}
+                  placeholder="Phone"
+                  onChange={(e) =>
+                    setProfile({ ...profile, phone: e.target.value })
+                  }
+                />
 
               </CardContent>
 
             </Card>
 
-          ))}
+          </TabsContent>
 
-          {addresses.length === 0 && (
-            <p className="text-center text-gray-500">
-              No address added yet
-            </p>
-          )}
+          {/* ADDRESS TAB */}
 
-        </TabsContent>
+          <TabsContent value="addresses">
 
+            <div className="flex justify-end mb-4">
 
-        {/* SETTINGS TAB */}
-
-        <TabsContent value="settings">
-
-          <Card>
-
-            <CardContent className="pt-6">
-
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={logout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
+              <Button onClick={addAddress}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Address
               </Button>
 
-            </CardContent>
+            </div>
 
-          </Card>
+            {addresses.map((addr) => (
 
-        </TabsContent>
+              <Card key={addr.id} className="mb-4">
 
-      </Tabs>
+                <CardContent className="space-y-3 pt-6">
+
+                  <Input
+                    placeholder="Full Name"
+                    value={addr.fullName}
+                    onChange={(e) =>
+                      updateAddress(addr.id, "fullName", e.target.value)
+                    }
+                  />
+
+                  <Input
+                    placeholder="Phone"
+                    value={addr.phone}
+                    onChange={(e) =>
+                      updateAddress(addr.id, "phone", e.target.value)
+                    }
+                  />
+
+                  <Input
+                    placeholder="Street Address"
+                    value={addr.street}
+                    onChange={(e) =>
+                      updateAddress(addr.id, "street", e.target.value)
+                    }
+                  />
+
+                  <Input
+                    placeholder="City"
+                    value={addr.city}
+                    onChange={(e) =>
+                      updateAddress(addr.id, "city", e.target.value)
+                    }
+                  />
+
+                  <Input
+                    placeholder="State"
+                    value={addr.state}
+                    onChange={(e) =>
+                      updateAddress(addr.id, "state", e.target.value)
+                    }
+                  />
+
+                  <Input
+                    placeholder="Postal Code"
+                    value={addr.postalCode}
+                    onChange={(e) =>
+                      updateAddress(addr.id, "postalCode", e.target.value)
+                    }
+                  />
+
+                  <Input
+                    placeholder="Country"
+                    value={addr.country}
+                    onChange={(e) =>
+                      updateAddress(addr.id, "country", e.target.value)
+                    }
+                  />
+
+                  <div className="flex gap-3">
+
+                    <Button
+                      onClick={() =>
+                        toast({
+                          title: "Address Saved",
+                          description: "Stored locally"
+                        })
+                      }
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Address
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      onClick={() => deleteAddress(addr.id)}
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Delete
+                    </Button>
+
+                  </div>
+
+                </CardContent>
+
+              </Card>
+
+            ))}
+
+            {addresses.length === 0 && (
+              <p className="text-center text-gray-500">
+                No address added yet
+              </p>
+            )}
+
+          </TabsContent>
+
+          {/* SETTINGS TAB */}
+
+          <TabsContent value="settings">
+
+            <Card>
+
+              <CardContent className="pt-6">
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={logout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Button>
+
+              </CardContent>
+
+            </Card>
+
+          </TabsContent>
+
+        </Tabs>
+
+      )}
 
     </div>
-
   );
 };
 
