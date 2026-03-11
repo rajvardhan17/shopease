@@ -24,26 +24,13 @@ public class ProductServlet extends HttpServlet {
 
     // ================= CORS =================
     private void setCorsHeaders(HttpServletRequest req, HttpServletResponse resp) {
-        String[] allowedOrigins = {
-                "http://localhost:8080",
-                "http://localhost:3000",
-                "http://192.168.56.1:8080",
-                "http://192.168.1.3:8080",
-                "https://shopease-six-navy.vercel.app",
-                "https://shopease-6p3wxf3cu-rajvardhan-singh-dewdas-projects.vercel.app"
-        };
         String origin = req.getHeader("Origin");
         if (origin != null) {
-            for (String allowedOrigin : allowedOrigins) {
-                if (allowedOrigin.equals(origin)) {
-                    resp.setHeader("Access-Control-Allow-Origin", origin);
-                    break;
-                }
-            }
+            resp.setHeader("Access-Control-Allow-Origin", origin);
         }
+        resp.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         resp.setHeader("Access-Control-Allow-Credentials", "true");
-        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
         resp.setHeader("Vary", "Origin");
     }
 
