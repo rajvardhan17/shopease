@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Package, MapPin, Settings, Camera, Save, ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, LogOut, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -21,10 +20,8 @@ const Profile = () => {
   const [profile, setProfile] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [addresses, setAddresses] = useState<any[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  const token = localStorage.getItem("token");
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -33,14 +30,18 @@ const Profile = () => {
   const fetchProfile = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/session`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        method: "GET",
+        credentials: "include", // IMPORTANT
       });
+
+      if (res.status === 401) {
+        navigate("/login");
+        return;
+      }
 
       const data = await res.json();
 
-      setProfile(data.user);
+      setProfile(data.user || {});
       setOrders(data.orders || []);
       setAddresses(data.addresses || []);
     } catch (error) {
@@ -54,16 +55,16 @@ const Profile = () => {
     try {
       await fetch(`${BACKEND_URL}/api/session`, {
         method: "PUT",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(profile),
       });
 
       toast({
         title: "Profile Updated",
-        description: "Your profile information has been saved successfully.",
+        description: "Your profile has been updated successfully",
       });
 
       setIsEditing(false);
@@ -72,12 +73,15 @@ const Profile = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+    await fetch(`${BACKEND_URL}/api/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
 
     toast({
       title: "Logged Out",
-      description: "You have been successfully logged out.",
+      description: "You have been logged out",
     });
 
     navigate("/login");
@@ -111,7 +115,9 @@ const Profile = () => {
 
           <div>
             <h1 className="text-2xl font-bold">My Profile</h1>
-            <p className="text-sm text-muted-foreground">Manage your account settings</p>
+            <p className="text-sm text-muted-foreground">
+              Manage your account settings
+            </p>
           </div>
         </div>
       </div>
@@ -146,7 +152,7 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Main */}
+        {/* Main Content */}
         <div className="lg:col-span-3">
 
           <Tabs defaultValue="info">
@@ -158,13 +164,15 @@ const Profile = () => {
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
-            {/* INFO */}
+            {/* Personal Info */}
             <TabsContent value="info">
               <Card>
                 <CardHeader className="flex flex-row justify-between items-center">
                   <div>
                     <CardTitle>Personal Information</CardTitle>
-                    <CardDescription>Update your personal details</CardDescription>
+                    <CardDescription>
+                      Update your personal details
+                    </CardDescription>
                   </div>
 
                   {!isEditing ? (
@@ -180,7 +188,7 @@ const Profile = () => {
                 <CardContent className="space-y-4">
 
                   <Input
-                    value={profile.firstName}
+                    value={profile.firstName || ""}
                     disabled={!isEditing}
                     onChange={(e) =>
                       setProfile({ ...profile, firstName: e.target.value })
@@ -188,7 +196,7 @@ const Profile = () => {
                   />
 
                   <Input
-                    value={profile.lastName}
+                    value={profile.lastName || ""}
                     disabled={!isEditing}
                     onChange={(e) =>
                       setProfile({ ...profile, lastName: e.target.value })
@@ -196,7 +204,7 @@ const Profile = () => {
                   />
 
                   <Input
-                    value={profile.email}
+                    value={profile.email || ""}
                     disabled={!isEditing}
                     onChange={(e) =>
                       setProfile({ ...profile, email: e.target.value })
@@ -207,7 +215,7 @@ const Profile = () => {
               </Card>
             </TabsContent>
 
-            {/* ORDERS */}
+            {/* Orders */}
             <TabsContent value="orders">
               <Card>
                 <CardHeader>
@@ -216,9 +224,7 @@ const Profile = () => {
 
                 <CardContent className="space-y-3">
 
-                  {orders.length === 0 && (
-                    <p>No orders found</p>
-                  )}
+                  {orders.length === 0 && <p>No orders found</p>}
 
                   {orders.map((order) => (
                     <div key={order.id} className="border p-4 rounded-lg flex justify-between">
@@ -242,7 +248,7 @@ const Profile = () => {
               </Card>
             </TabsContent>
 
-            {/* ADDRESSES */}
+            {/* Addresses */}
             <TabsContent value="addresses">
               <Card>
                 <CardHeader>
@@ -255,11 +261,9 @@ const Profile = () => {
 
                   {addresses.map((addr) => (
                     <div key={addr.id} className="border p-4 rounded-lg">
-
                       <p className="font-semibold">{addr.name}</p>
                       <p>{addr.street}</p>
                       <p>{addr.city} {addr.state}</p>
-
                     </div>
                   ))}
 
@@ -267,7 +271,7 @@ const Profile = () => {
               </Card>
             </TabsContent>
 
-            {/* SETTINGS */}
+            {/* Settings */}
             <TabsContent value="settings">
               <Card>
                 <CardHeader>
