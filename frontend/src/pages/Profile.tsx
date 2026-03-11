@@ -1,6 +1,5 @@
-
-import { useState } from "react";
-import { ArrowLeft, Save, LogOut, Plus, Trash } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Save, LogOut, Plus, Trash, User, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,16 +16,18 @@ const Profile = () => {
 
   const [profile, setProfile] = useState<any>(null);
   const [addresses, setAddresses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-  // =====================
-  // FETCH PROFILE (GET)
-  // =====================
+  // =============================
+  // AUTO LOAD PROFILE
+  // =============================
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const fetchProfile = async () => {
-
-    setLoading(true);
 
     try {
 
@@ -34,25 +35,18 @@ const Profile = () => {
         credentials: "include"
       });
 
+      if (res.status === 401) {
+        navigate("/login");
+        return;
+      }
+
       const data = await res.json();
 
       if (data.success) {
-
         setProfile(data.user);
-
-        toast({
-          title: "Profile Loaded"
-        });
-
-      } else {
-
-        navigate("/login");
-
       }
 
     } catch (err) {
-
-      console.error(err);
 
       toast({
         title: "Failed to load profile",
@@ -60,15 +54,13 @@ const Profile = () => {
       });
 
     } finally {
-
       setLoading(false);
-
     }
   };
 
-  // =====================
-  // PROFILE UPDATE (PUT)
-  // =====================
+  // =============================
+  // SAVE PROFILE
+  // =============================
 
   const saveProfile = async () => {
 
@@ -88,47 +80,50 @@ const Profile = () => {
       if (data.success) {
 
         toast({
-          title: "Profile Updated"
+          title: "Profile updated successfully"
         });
 
         setIsEditingProfile(false);
-
       }
 
     } catch (err) {
 
-      console.error(err);
+      toast({
+        title: "Failed to update profile",
+        variant: "destructive"
+      });
 
     }
   };
 
-  // =====================
+  // =============================
   // ADDRESS FUNCTIONS
-  // =====================
+  // =============================
 
   const addAddress = () => {
 
-    const newAddress = {
-      id: Date.now(),
-      fullName: "",
-      phone: "",
-      street: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: ""
-    };
-
-    setAddresses([...addresses, newAddress]);
+    setAddresses([
+      ...addresses,
+      {
+        id: Date.now(),
+        fullName: "",
+        phone: "",
+        street: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: ""
+      }
+    ]);
   };
 
   const updateAddress = (id: number, field: string, value: string) => {
 
-    const updated = addresses.map((addr) =>
-      addr.id === id ? { ...addr, [field]: value } : addr
+    setAddresses(
+      addresses.map((addr) =>
+        addr.id === id ? { ...addr, [field]: value } : addr
+      )
     );
-
-    setAddresses(updated);
   };
 
   const deleteAddress = (id: number) => {
@@ -140,9 +135,9 @@ const Profile = () => {
     });
   };
 
-  // =====================
+  // =============================
   // LOGOUT
-  // =====================
+  // =============================
 
   const logout = async () => {
 
@@ -154,44 +149,58 @@ const Profile = () => {
     navigate("/login");
   };
 
+  // =============================
+  // LOADING STATE
+  // =============================
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen text-lg">
+        Loading profile...
+      </div>
+    );
+  }
+
   return (
 
-    <div className="container mx-auto px-4 py-10">
+    <div className="container mx-auto px-4 py-10 max-w-4xl">
 
       {/* HEADER */}
 
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center justify-between mb-8">
 
-        <Button variant="ghost" onClick={() => navigate("/")}>
-          <ArrowLeft />
-        </Button>
+        <div className="flex items-center gap-4">
 
-        <h1 className="text-2xl font-bold">My Profile</h1>
+          <Button variant="ghost" onClick={() => navigate("/")}>
+            <ArrowLeft />
+          </Button>
 
-        <Button onClick={fetchProfile}>
-          Load Profile
-        </Button>
+          <h1 className="text-2xl font-bold">My Profile</h1>
+
+        </div>
 
       </div>
-
-      {/* LOADING */}
-
-      {loading && (
-        <div className="text-center mb-6">
-          Loading profile...
-        </div>
-      )}
-
-      {/* SHOW TABS ONLY AFTER PROFILE LOAD */}
 
       {profile && (
 
         <Tabs defaultValue="profile">
 
-          <TabsList className="grid grid-cols-3 w-full mb-6">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="addresses">Addresses</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsList className="grid grid-cols-3 mb-6">
+
+            <TabsTrigger value="profile">
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </TabsTrigger>
+
+            <TabsTrigger value="addresses">
+              <MapPin className="mr-2 h-4 w-4" />
+              Addresses
+            </TabsTrigger>
+
+            <TabsTrigger value="settings">
+              Settings
+            </TabsTrigger>
+
           </TabsList>
 
           {/* PROFILE TAB */}
@@ -200,19 +209,23 @@ const Profile = () => {
 
             <Card>
 
-              <CardHeader className="flex justify-between items-center">
+              <CardHeader className="flex flex-row justify-between items-center">
 
                 <CardTitle>Personal Information</CardTitle>
 
                 {!isEditingProfile ? (
+
                   <Button onClick={() => setIsEditingProfile(true)}>
                     Edit
                   </Button>
+
                 ) : (
+
                   <Button onClick={saveProfile}>
                     <Save className="mr-2 h-4 w-4" />
                     Save
                   </Button>
+
                 )}
 
               </CardHeader>
@@ -220,27 +233,27 @@ const Profile = () => {
               <CardContent className="space-y-4">
 
                 <Input
+                  placeholder="Full Name"
                   value={profile.fullName || ""}
                   disabled={!isEditingProfile}
-                  placeholder="Full Name"
                   onChange={(e) =>
                     setProfile({ ...profile, fullName: e.target.value })
                   }
                 />
 
                 <Input
+                  placeholder="Email"
                   value={profile.email || ""}
                   disabled={!isEditingProfile}
-                  placeholder="Email"
                   onChange={(e) =>
                     setProfile({ ...profile, email: e.target.value })
                   }
                 />
 
                 <Input
+                  placeholder="Phone"
                   value={profile.phone || ""}
                   disabled={!isEditingProfile}
-                  placeholder="Phone"
                   onChange={(e) =>
                     setProfile({ ...profile, phone: e.target.value })
                   }
@@ -265,6 +278,12 @@ const Profile = () => {
 
             </div>
 
+            {addresses.length === 0 && (
+              <p className="text-center text-gray-500">
+                No addresses added yet
+              </p>
+            )}
+
             {addresses.map((addr) => (
 
               <Card key={addr.id} className="mb-4">
@@ -288,55 +307,56 @@ const Profile = () => {
                   />
 
                   <Input
-                    placeholder="Street Address"
+                    placeholder="Street"
                     value={addr.street}
                     onChange={(e) =>
                       updateAddress(addr.id, "street", e.target.value)
                     }
                   />
 
-                  <Input
-                    placeholder="City"
-                    value={addr.city}
-                    onChange={(e) =>
-                      updateAddress(addr.id, "city", e.target.value)
-                    }
-                  />
+                  <div className="grid grid-cols-2 gap-3">
 
-                  <Input
-                    placeholder="State"
-                    value={addr.state}
-                    onChange={(e) =>
-                      updateAddress(addr.id, "state", e.target.value)
-                    }
-                  />
-
-                  <Input
-                    placeholder="Postal Code"
-                    value={addr.postalCode}
-                    onChange={(e) =>
-                      updateAddress(addr.id, "postalCode", e.target.value)
-                    }
-                  />
-
-                  <Input
-                    placeholder="Country"
-                    value={addr.country}
-                    onChange={(e) =>
-                      updateAddress(addr.id, "country", e.target.value)
-                    }
-                  />
-
-                  <div className="flex gap-3">
-
-                    <Button
-                      onClick={() =>
-                        toast({
-                          title: "Address Saved",
-                          description: "Stored locally"
-                        })
+                    <Input
+                      placeholder="City"
+                      value={addr.city}
+                      onChange={(e) =>
+                        updateAddress(addr.id, "city", e.target.value)
                       }
-                    >
+                    />
+
+                    <Input
+                      placeholder="State"
+                      value={addr.state}
+                      onChange={(e) =>
+                        updateAddress(addr.id, "state", e.target.value)
+                      }
+                    />
+
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+
+                    <Input
+                      placeholder="Postal Code"
+                      value={addr.postalCode}
+                      onChange={(e) =>
+                        updateAddress(addr.id, "postalCode", e.target.value)
+                      }
+                    />
+
+                    <Input
+                      placeholder="Country"
+                      value={addr.country}
+                      onChange={(e) =>
+                        updateAddress(addr.id, "country", e.target.value)
+                      }
+                    />
+
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+
+                    <Button>
                       <Save className="mr-2 h-4 w-4" />
                       Save Address
                     </Button>
@@ -357,12 +377,6 @@ const Profile = () => {
 
             ))}
 
-            {addresses.length === 0 && (
-              <p className="text-center text-gray-500">
-                No address added yet
-              </p>
-            )}
-
           </TabsContent>
 
           {/* SETTINGS TAB */}
@@ -374,7 +388,7 @@ const Profile = () => {
               <CardContent className="pt-6">
 
                 <Button
-                  variant="outline"
+                  variant="destructive"
                   className="w-full"
                   onClick={logout}
                 >
