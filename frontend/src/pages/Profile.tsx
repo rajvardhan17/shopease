@@ -32,7 +32,7 @@ const Profile = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/user/profile`, {
+      const res = await fetch(`${BACKEND_URL}/api/session`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -52,7 +52,7 @@ const Profile = () => {
 
   const handleSaveProfile = async () => {
     try {
-      await fetch(`${BACKEND_URL}/api/user/profile`, {
+      await fetch(`${BACKEND_URL}/api/session`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
