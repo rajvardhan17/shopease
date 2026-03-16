@@ -66,20 +66,16 @@
         <url-pattern>/api/search</url-pattern>
     </servlet-mapping>
 
-    <!-- ===================== Optional Configuration ===================== -->
-
-    <!-- Session timeout in minutes -->
+    <!-- ===================== Session Configuration ===================== -->
     <session-config>
         <session-timeout>30</session-timeout>
-    </session-config>
-
-    <session-config>
         <cookie-config>
             <http-only>true</http-only>
             <secure>true</secure>
         </cookie-config>
     </session-config>
-    <!-- Welcome file -->
+
+    <!-- ===================== Welcome File ===================== -->
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
