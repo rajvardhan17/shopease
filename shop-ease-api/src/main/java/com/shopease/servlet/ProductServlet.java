@@ -102,6 +102,7 @@ public class ProductServlet extends HttpServlet {
                 result.put("products", products);
                 result.put("page", page);
                 result.put("size", size);
+
             }
 
         } catch (Exception e) {
