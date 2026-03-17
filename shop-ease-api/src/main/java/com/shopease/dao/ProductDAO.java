@@ -48,7 +48,7 @@ public class ProductDAO {
             LIMIT ? OFFSET ?
         """;
 
-        ry (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, size);
