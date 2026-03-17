@@ -16,30 +16,19 @@ public final class DatabaseConnection {
     }
 
     public static Connection getConnection() {
+    try {
+        Class.forName("com.mysql.cj.jdbc.Driver");
 
-        try {
-            String host = System.getenv("MYSQLHOST");
-            String port = System.getenv("MYSQLPORT");
-            String database = System.getenv("MYSQLDATABASE");
-            String user = System.getenv("MYSQLUSER");
-            String password = System.getenv("MYSQLPASSWORD");
+        // 🔥 Replace with your Aiven details
+        String url = "jdbc:mysql://<AIVEN_HOST>:<PORT>/<DATABASE>?sslmode=require";
+        String user = "<USERNAME>";
+        String password = "<PASSWORD>";
 
-            if (host == null || port == null || database == null ||
-                    user == null || password == null) {
+        System.out.println("✅ Connecting to DB: " + url);
+        return DriverManager.getConnection(url, user, password);
 
-                throw new RuntimeException("❌ One or more MySQL environment variables are missing.");
-            }
-
-            String url = "jdbc:mysql://" + host + ":" + port + "/" + database
-                    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-
-            System.out.println("Connecting to: " + url);
-
-            return DriverManager.getConnection(url, user, password);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("❌ Database connection failed", e);
-        }
+    } catch (Exception e) {
+        throw new RuntimeException("❌ Database connection failed", e);
     }
+}
 }
