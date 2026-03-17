@@ -48,18 +48,24 @@ public class ProductDAO {
             LIMIT ? OFFSET ?
         """;
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+
+            // ✅ ADD THIS DEBUG
+            System.out.println("DB URL: " + conn.getMetaData().getURL());
+            System.out.println("DB Name: " + conn.getCatalog());
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
 
             stmt.setInt(1, size);
             stmt.setInt(2, offset);
 
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
+                System.out.println("Product found: " + rs.getString("title")); // extra debug
                 products.add(mapProduct(rs));
             }
 
-        } catch (Exception e) {
+        }catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error fetching all products", e);
         }
 
